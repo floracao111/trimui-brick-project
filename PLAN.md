@@ -1,6 +1,6 @@
-# Project plan
+# Stretch a Sketch: project plan
 
-*(Project title TBD.)*
+*Draw a rough line. The AI stretches it into art.*
 
 PSAM 5600 B, Fall 2026. Device: TrimUI Brick Pro. Co-author: Claude Sonnet 5.5 (via Claude Code).
 
@@ -9,6 +9,8 @@ PSAM 5600 B, Fall 2026. Device: TrimUI Brick Pro. Co-author: Claude Sonnet 5.5 (
 An Etch A Sketch for a retro Linux handheld. Draw with the two joysticks, pick colors and a style with the buttons, and a model turns the sketch into a finished AI image.
 
 The Brick Pro is a game handheld with no drawing tool and no AI. This project makes it do something it was never meant to do, using the two sticks the way an Etch A Sketch uses its two knobs.
+
+Like the toy, you draw one continuous line and can't lift the pen. The AI has to make sense of that single wiggly line, and that limit is part of the fun.
 
 ## How it works
 
@@ -38,9 +40,10 @@ The node and the handheld are both arm64, so code built on the node runs on the 
 
 ## Prior art
 
-I could not find this exact combination, but each part exists separately:
+Turning a sketch into an AI image is not new. Phone and web tools like [Krea](https://www.krea.ai/apps/sketch-to-image), [Scribble Diffusion](https://creati.ai/ai-tools/scribble-diffusion/), SketchAI and Canva already do it. I could not find one that runs on a retro Linux handheld, draws with two joysticks, or uses a model hosted on the user's own node.
 
-- Phone apps that turn sketches into images, using touchscreens.
+Related work:
+
 - [TekaSketch](https://www.yankodesign.com/2025/10/01/this-diy-raspberry-pi-camera-turns-your-photos-into-automated-etch-a-sketch-art/) turns photos into Etch A Sketch drawings, the opposite direction.
 - [SandSketch](https://forum.v1e.com/t/sandtable-etch-a-sketch/42882) drives a sand table with the two sticks of a controller.
 - [trimui-brick-chrome](https://github.com/vhu231/trimui-brick-chrome) runs Chrome on the Brick Pro. It is a foundation others could build on, not what this project does.
