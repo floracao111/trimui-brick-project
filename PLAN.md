@@ -42,26 +42,28 @@ The app always makes 90s-style pixel art, and the buttons change how it looks:
 ## How it works
 
 ```
- Brick Pro                 Oracle cloud node            Gemini
+ Brick Pro                 Oracle cloud node            Claude
  ---------                 -----------------            ------
- sticks draw a sketch --> receives the sketch  -->  redraws it as
- buttons pick options      builds the prompt         pixel art
- shows the result     <--  cleans up the image  <--
+ sticks draw a sketch --> receives the sketch  -->  looks at it and draws
+ buttons pick options      asks Claude               it as a pixel grid
+ shows the result     <--  renders the grid     <--
 ```
 
 1. **Handheld app.** A small native app. Left stick moves the pen horizontally, right stick vertically. Buttons change the options, send the sketch, and clear the screen.
-2. **Node server.** Runs on my Oracle cloud node. It receives the sketch, writes a prompt that asks for 90s pixel art in the chosen options, calls Gemini, and sends the image back. The API key stays on the node.
-3. **Gemini.** Google's image model redraws the sketch.
-4. **Pixel cleanup.** The node shrinks the result to a low-resolution grid and limits it to the chosen palette, so every picture has the same crisp pixel look even if the model's output is not perfectly pixelated. This is planned, not built yet.
-5. **Own language model (later).** Once the node hosts its own model, it will turn the button choices into a richer prompt.
+2. **Node server.** Runs on my Oracle cloud node. It receives the sketch and asks Claude Code, running on the node and signed in with my Claude Pro account, to look at it and reply with a pixel grid in the chosen palette and options.
+3. **Claude (Sonnet 5.5).** Looks at the sketch and draws it as a small grid of palette codes, like a sprite. A language model writes pixel art well because pixel art is just a small grid.
+4. **Render.** The node checks the grid, enforces the palette, and renders it as a crisp image with the same look every time, then sends it back to the handheld.
+5. **Own language model (later).** Once the node hosts its own small model in Week 11, it can handle side jobs such as naming each picture.
+
+This is planned, not built. I will test it with a few real sketches first. If my Pro plan's limits or terms get in the way, the node can use a pay-as-you-go API key instead without changing the rest of the design.
 
 The node and the handheld are both arm64, so code built on the node runs on the handheld.
 
 ## What the node does
 
-- **Relay.** The handheld sends the sketch to the node, the node calls Gemini and returns the image. This keeps the API key off the device and lets the node add the prompt, clean up the image, cache results, and rate-limit requests.
+- **Relay.** The handheld sends the sketch to the node, the node asks Claude and returns the finished image. This keeps my login off the device and lets the node add the prompt, check the grid, cache results, and rate-limit requests.
 - **Build machine.** The handheld app is written and compiled on the node.
-- **Own model (later).** A small language model hosted on the node will write richer prompts from the button choices.
+- **Own model (later).** A small language model hosted on the node for side jobs.
 
 ## Build and deploy
 
@@ -74,15 +76,15 @@ Both machines are arm64, but the handheld runs an older Linux than the node, so 
 ## Steps
 
 1. Drawing canvas prototype on my laptop.
-2. Node server that turns a sketch into pixel art, including the cleanup step.
+2. Node server that asks Claude to turn a sketch into a pixel grid, and renders it.
 3. Get the app running on the Brick Pro.
 4. Connect the handheld to the node, end to end.
-5. Add the button options, and the self-hosted model on the node.
+5. Add the button options, and the self-hosted model on the node for side jobs.
 6. Documentation, license, and a tagged release.
 
 ## Prior art
 
-Turning a sketch into an AI image is not new. Phone and web tools like [Krea](https://www.krea.ai/apps/sketch-to-image), [Scribble Diffusion](https://creati.ai/ai-tools/scribble-diffusion/), SketchAI and Canva already do it. I could not find one that runs on a retro Linux handheld, draws with two joysticks, always outputs 90s pixel art, or uses a model hosted on the user's own node.
+Turning a sketch into an AI image is not new. Phone and web tools like [Krea](https://www.krea.ai/apps/sketch-to-image), [Scribble Diffusion](https://creati.ai/ai-tools/scribble-diffusion/), SketchAI and Canva already do it. I could not find one that runs on a retro Linux handheld, draws with two joysticks, or always outputs 90s pixel art.
 
 Related work:
 

@@ -8,7 +8,7 @@
 
 ## What this is
 
-An Etch A Sketch for a retro Linux handheld. Draw with the two joysticks, and the app turns every sketch into 90s video-game pixel art, with button options to customize the look. My own cloud node relays each sketch to Gemini and cleans up the result.
+An Etch A Sketch for a retro Linux handheld. Draw with the two joysticks, and the app turns every sketch into 90s video-game pixel art, with button options to customize the look. My own cloud node asks Claude to redraw each sketch as a pixel grid, then renders the result.
 
 Read the full plan in [PLAN.md](PLAN.md).
 
