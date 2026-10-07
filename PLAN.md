@@ -12,6 +12,23 @@ The Brick Pro is a game handheld with no drawing tool and no AI. This project ma
 
 Like the toy, you draw one continuous line and can't lift the pen. The AI has to make sense of that single wiggly line, and that limit is part of the fun.
 
+### What it looks like
+
+<table>
+<tr>
+<td align="center"><img src="images/etch-taj-mahal.jpg" width="260" alt="A red Etch A Sketch with a detailed drawing of the Taj Mahal"></td>
+<td align="center"><img src="images/rough-scribble.svg" width="260" alt="A rough single-line scribble of hills, a tree and a swirly sky"></td>
+<td align="center"><img src="images/starry-night.jpg" width="260" alt="Van Gogh's The Starry Night"></td>
+</tr>
+<tr>
+<td align="center"><b>1. The toy</b><br>Two knobs, one line</td>
+<td align="center"><b>2. A rough scribble</b><br>What the handheld sends</td>
+<td align="center"><b>3. A masterpiece</b><br>What we are aiming for</td>
+</tr>
+</table>
+
+These are illustrations of the idea, not output from this project. The scribble is a mock-up, and the painting stands in for the goal.
+
 ## How it works
 
 ```
@@ -61,6 +78,12 @@ Related work:
 - [TekaSketch](https://www.yankodesign.com/2025/10/01/this-diy-raspberry-pi-camera-turns-your-photos-into-automated-etch-a-sketch-art/) turns photos into Etch A Sketch drawings, the opposite direction.
 - [SandSketch](https://forum.v1e.com/t/sandtable-etch-a-sketch/42882) drives a sand table with the two sticks of a controller.
 - [trimui-brick-chrome](https://github.com/vhu231/trimui-brick-chrome) runs Chrome on the Brick Pro. It is a foundation others could build on, not what this project does.
+
+## Image credits
+
+- Etch A Sketch with a Taj Mahal drawing: "Taj Mahal drawing on an Etch-A-Sketch" by Etcha, [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0), via [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Taj_Mahal_drawing_on_an_Etch-A-Sketch.jpg). Etch A Sketch is a trademark of its owner.
+- The Starry Night by Vincent van Gogh, public domain, via [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg).
+- Rough scribble: made for this project.
 
 ## Attribution
 
