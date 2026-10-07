@@ -1,6 +1,6 @@
 # Stretch a Sketch
 
-*Draw a rough line. The AI stretches it into art.*
+*Draw a rough line. The AI stretches it into 90s pixel art.*
 
 - **Device**: TrimUI Brick Pro (Allwinner A133p, 1GB RAM, 64GB SD card)
 - **Model(s)**: Claude Sonnet 5.5 (via Claude Code)
@@ -8,7 +8,7 @@
 
 ## What this is
 
-An Etch A Sketch for a retro Linux handheld. Draw with the two joysticks, pick colors and a style with the buttons, and a model on my own cloud node turns the sketch into a finished AI image.
+An Etch A Sketch for a retro Linux handheld. Draw with the two joysticks, and the app turns every sketch into 90s video-game pixel art, with button options to customize the look. My own cloud node relays each sketch to Gemini and cleans up the result.
 
 Read the full plan in [PLAN.md](PLAN.md).
 

@@ -1,14 +1,14 @@
 # Stretch a Sketch: project plan
 
-*Draw a rough line. The AI stretches it into art.*
+*Draw a rough line. The AI stretches it into 90s pixel art.*
 
 PSAM 5600 B, Fall 2026. Device: TrimUI Brick Pro. Co-author: Claude Sonnet 5.5 (via Claude Code).
 
 ## Idea
 
-An Etch A Sketch for a retro Linux handheld. Draw with the two joysticks, pick colors and a style with the buttons, and a model turns the sketch into a finished AI image.
+An Etch A Sketch for a retro Linux handheld. Draw with the two joysticks, and the app turns every sketch into 90s video-game pixel art. The buttons let you customize the look.
 
-The Brick Pro is a game handheld with no drawing tool and no AI. This project makes it do something it was never meant to do, using the two sticks the way an Etch A Sketch uses its two knobs.
+The Brick Pro is a game handheld with no drawing tool and no AI. This project makes it do something it was never meant to do, using the two sticks the way an Etch A Sketch uses its two knobs. The output is the kind of art the handheld's own games are made of.
 
 Like the toy, you draw one continuous line and can't lift the pen. The AI has to make sense of that single wiggly line, and that limit is part of the fun.
 
@@ -22,33 +22,44 @@ Like the toy, you draw one continuous line and can't lift the pen. The AI has to
 </tr>
 <tr>
 <td align="center"><b>1. The toy</b><br>Two knobs, one line</td>
-<td align="center"><b>2. A rough scribble</b><br>What the handheld sends</td>
-<td align="center"><b>3. One possible style</b><br>90s pixel art, picked with a button</td>
+<td align="center"><b>2. A rough scribble</b><br>What you draw</td>
+<td align="center"><b>3. What the app makes</b><br>90s pixel art</td>
 </tr>
 </table>
 
-These are illustrations of the idea, not output from this project. The scribble and the pixel banana are mock-ups made for this plan: a rough line goes in, and the style you pick on the handheld decides how the banana comes out. 90s-style pixel art is one example of a style.
+These are illustrations of the idea, not output from this project. The scribble and the pixel banana are mock-ups made for this plan.
+
+## Customizing with the buttons
+
+The app always makes 90s-style pixel art, and the buttons change how it looks:
+
+- **Palette.** For example classic 16 colors, a green handheld look, or bright arcade colors.
+- **Pixel size.** Chunky 8-bit or finer 16-bit.
+- **Outline and shading.** Turn the dark outline and the shading tones on or off.
+- **Subject.** A single sprite, an item, or a small scene.
+- **Background.** Black, a flat color, or transparent.
 
 ## How it works
 
 ```
  Brick Pro                 Oracle cloud node            Gemini
  ---------                 -----------------            ------
- sticks draw a sketch --> receives the sketch  -->  turns it into
- buttons pick style        builds the prompt         a finished image
- shows the result     <--  returns the image    <--
+ sticks draw a sketch --> receives the sketch  -->  redraws it as
+ buttons pick options      builds the prompt         pixel art
+ shows the result     <--  cleans up the image  <--
 ```
 
-1. **Handheld app.** A small native app. Left stick moves the pen horizontally, right stick vertically. Buttons change color and style, send the sketch, and clear the screen.
-2. **Node server.** Runs on my Oracle cloud node. It receives the sketch, adds a prompt based on the chosen style, calls Gemini, and sends the image back. The API key stays on the node.
-3. **Gemini.** Google's image model does the sketch-to-image step.
-4. **Own language model (later).** Once the node hosts its own model, it will turn the button choices into a richer prompt.
+1. **Handheld app.** A small native app. Left stick moves the pen horizontally, right stick vertically. Buttons change the options, send the sketch, and clear the screen.
+2. **Node server.** Runs on my Oracle cloud node. It receives the sketch, writes a prompt that asks for 90s pixel art in the chosen options, calls Gemini, and sends the image back. The API key stays on the node.
+3. **Gemini.** Google's image model redraws the sketch.
+4. **Pixel cleanup.** The node shrinks the result to a low-resolution grid and limits it to the chosen palette, so every picture has the same crisp pixel look even if the model's output is not perfectly pixelated. This is planned, not built yet.
+5. **Own language model (later).** Once the node hosts its own model, it will turn the button choices into a richer prompt.
 
 The node and the handheld are both arm64, so code built on the node runs on the handheld.
 
 ## What the node does
 
-- **Relay.** The handheld sends the sketch to the node, the node calls Gemini and returns the image. This keeps the API key off the device and lets the node add the style prompt, resize the image, cache results, and rate-limit requests.
+- **Relay.** The handheld sends the sketch to the node, the node calls Gemini and returns the image. This keeps the API key off the device and lets the node add the prompt, clean up the image, cache results, and rate-limit requests.
 - **Build machine.** The handheld app is written and compiled on the node.
 - **Own model (later).** A small language model hosted on the node will write richer prompts from the button choices.
 
@@ -63,15 +74,15 @@ Both machines are arm64, but the handheld runs an older Linux than the node, so 
 ## Steps
 
 1. Drawing canvas prototype on my laptop.
-2. Node server that turns a sketch into an AI image.
+2. Node server that turns a sketch into pixel art, including the cleanup step.
 3. Get the app running on the Brick Pro.
 4. Connect the handheld to the node, end to end.
-5. Add color and style menus, and the self-hosted model on the node.
+5. Add the button options, and the self-hosted model on the node.
 6. Documentation, license, and a tagged release.
 
 ## Prior art
 
-Turning a sketch into an AI image is not new. Phone and web tools like [Krea](https://www.krea.ai/apps/sketch-to-image), [Scribble Diffusion](https://creati.ai/ai-tools/scribble-diffusion/), SketchAI and Canva already do it. I could not find one that runs on a retro Linux handheld, draws with two joysticks, or uses a model hosted on the user's own node.
+Turning a sketch into an AI image is not new. Phone and web tools like [Krea](https://www.krea.ai/apps/sketch-to-image), [Scribble Diffusion](https://creati.ai/ai-tools/scribble-diffusion/), SketchAI and Canva already do it. I could not find one that runs on a retro Linux handheld, draws with two joysticks, always outputs 90s pixel art, or uses a model hosted on the user's own node.
 
 Related work:
 
