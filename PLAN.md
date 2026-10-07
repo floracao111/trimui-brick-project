@@ -18,7 +18,7 @@ Like the toy, you draw one continuous line and can't lift the pen. The AI has to
 <tr>
 <td align="center"><img src="images/etch-taj-mahal.jpg" width="260" alt="A red Etch A Sketch with a detailed drawing of the Taj Mahal"></td>
 <td align="center"><img src="images/banana-scribble.svg" width="260" alt="A rough single-line scribble of a banana on an Etch A Sketch-gray screen"></td>
-<td align="center"><img src="images/banana-pop.svg" width="260" alt="A clean bright yellow 16-bit style pixel banana on a black background"></td>
+<td align="center"><img src="images/banana-pixel.svg" width="260" alt="A clean bright yellow 16-bit style pixel banana on a black background"></td>
 </tr>
 <tr>
 <td align="center"><b>1. The toy</b><br>Two knobs, one line</td>
