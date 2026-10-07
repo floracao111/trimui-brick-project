@@ -17,17 +17,17 @@ Like the toy, you draw one continuous line and can't lift the pen. The AI has to
 <table>
 <tr>
 <td align="center"><img src="images/etch-taj-mahal.jpg" width="260" alt="A red Etch A Sketch with a detailed drawing of the Taj Mahal"></td>
-<td align="center"><img src="images/rough-scribble.svg" width="260" alt="A rough single-line scribble of a small steam locomotive"></td>
-<td align="center"><img src="images/ascii-train.svg" width="260" alt="An ASCII-art steam locomotive in a retro terminal window"></td>
+<td align="center"><img src="images/banana-scribble.svg" width="260" alt="A rough single-line scribble of a banana on an Etch A Sketch-gray screen"></td>
+<td align="center"><img src="images/banana-pop.svg" width="260" alt="A bright yellow pop-art pixel banana with a hot pink shadow on a black background"></td>
 </tr>
 <tr>
 <td align="center"><b>1. The toy</b><br>Two knobs, one line</td>
 <td align="center"><b>2. A rough scribble</b><br>What the handheld sends</td>
-<td align="center"><b>3. One possible style</b><br>ASCII art, picked with a button</td>
+<td align="center"><b>3. One possible style</b><br>Pop-art pixels, picked with a button</td>
 </tr>
 </table>
 
-These are illustrations of the idea, not output from this project. The scribble and the ASCII train are mock-ups made for this plan: a rough line goes in, and the style you pick on the handheld decides how the train comes out. ASCII art is one example of a style.
+These are illustrations of the idea, not output from this project. The scribble and the pixel banana are mock-ups made for this plan: a rough line goes in, and the style you pick on the handheld decides how the banana comes out. Pop-art pixels are one example of a style.
 
 ## How it works
 
@@ -82,7 +82,7 @@ Related work:
 ## Image credits
 
 - The toy (Etch A Sketch with a Taj Mahal drawing): "Taj Mahal drawing on an Etch-A-Sketch" by Etcha, [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0), via [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Taj_Mahal_drawing_on_an_Etch-A-Sketch.jpg). Etch A Sketch is a trademark of its owner.
-- Rough scribble and ASCII train: made for this project.
+- Banana scribble and pop-art pixel banana: made for this project.
 
 ## Attribution
 
