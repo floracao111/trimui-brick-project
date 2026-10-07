@@ -29,6 +29,20 @@ Like the toy, you draw one continuous line and can't lift the pen. The AI has to
 
 The node and the handheld are both arm64, so code built on the node runs on the handheld.
 
+## What the node does
+
+- **Relay.** The handheld sends the sketch to the node, the node calls Gemini and returns the image. This keeps the API key off the device and lets the node add the style prompt, resize the image, cache results, and rate-limit requests.
+- **Build machine.** The handheld app is written and compiled on the node.
+- **Own model (later).** A small language model hosted on the node will write richer prompts from the button choices.
+
+## Build and deploy
+
+1. Write and compile the app on the node (arm64).
+2. Copy it to my laptop, then onto the handheld's SD card (card-reader USB mode, or SSH once I can reach the device).
+3. Launch it from the Brick Pro's stock menu. I run this step myself.
+
+Both machines are arm64, but the handheld runs an older Linux than the node, so a program built on the node may need its libraries bundled or linked statically. A tiny "hello world" test through the same pipeline comes first, to prove it works before building the real app.
+
 ## Steps
 
 1. Drawing canvas prototype on my laptop.
