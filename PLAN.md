@@ -18,16 +18,16 @@ Like the toy, you draw one continuous line and can't lift the pen. The AI has to
 <tr>
 <td align="center"><img src="images/etch-taj-mahal.jpg" width="260" alt="A red Etch A Sketch with a detailed drawing of the Taj Mahal"></td>
 <td align="center"><img src="images/rough-scribble.svg" width="260" alt="A rough single-line scribble of a small steam locomotive"></td>
-<td align="center"><img src="images/etch-locomotive.jpg" width="260" alt="A finely detailed line drawing of a small steam locomotive on an Etch A Sketch screen"></td>
+<td align="center"><img src="images/pixel-result.svg" width="260" alt="A cute colorful pixel-art steam locomotive with a smiling face"></td>
 </tr>
 <tr>
 <td align="center"><b>1. The toy</b><br>Two knobs, one line</td>
 <td align="center"><b>2. A rough scribble</b><br>What the handheld sends</td>
-<td align="center"><b>3. A masterful sketch</b><br>Same subject, what we are aiming for</td>
+<td align="center"><b>3. The stretched result</b><br>Same subject, what we are aiming for</td>
 </tr>
 </table>
 
-These are illustrations of the idea, not output from this project. The scribble is a mock-up, and the locomotive drawing, made by hand on a real toy, stands in for the goal: still a sketch, but a masterful one.
+These are illustrations of the idea, not output from this project. The scribble and the pixel-art result are mock-ups made for this plan: a rough line goes in, and a colorful, cute, still-sketchy picture of the same thing comes out.
 
 ## How it works
 
@@ -82,8 +82,7 @@ Related work:
 ## Image credits
 
 - The toy (Etch A Sketch with a Taj Mahal drawing): "Taj Mahal drawing on an Etch-A-Sketch" by Etcha, [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0), via [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Taj_Mahal_drawing_on_an_Etch-A-Sketch.jpg). Etch A Sketch is a trademark of its owner.
-- Etch A Sketch locomotive drawing: "Etch A Sketch engine drawing" by Les Chatfield, [CC BY 2.0](https://creativecommons.org/licenses/by/2.0), via [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Etch_A_Sketch_engine_drawing.jpg). Cropped to the screen.
-- Rough scribble: made for this project.
+- Rough scribble and pixel-art locomotive: made for this project.
 
 ## Attribution
 
