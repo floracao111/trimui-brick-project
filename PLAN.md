@@ -18,16 +18,16 @@ Like the toy, you draw one continuous line and can't lift the pen. The AI has to
 <tr>
 <td align="center"><img src="images/etch-taj-mahal.jpg" width="260" alt="A red Etch A Sketch with a detailed drawing of the Taj Mahal"></td>
 <td align="center"><img src="images/rough-scribble.svg" width="260" alt="A rough single-line scribble of a small steam locomotive"></td>
-<td align="center"><img src="images/pixel-result.svg" width="260" alt="A cute colorful pixel-art steam locomotive with a smiling face"></td>
+<td align="center"><img src="images/ascii-train.svg" width="260" alt="An ASCII-art steam locomotive in a retro terminal window"></td>
 </tr>
 <tr>
 <td align="center"><b>1. The toy</b><br>Two knobs, one line</td>
 <td align="center"><b>2. A rough scribble</b><br>What the handheld sends</td>
-<td align="center"><b>3. The stretched result</b><br>Same subject, what we are aiming for</td>
+<td align="center"><b>3. One possible style</b><br>ASCII art, picked with a button</td>
 </tr>
 </table>
 
-These are illustrations of the idea, not output from this project. The scribble and the pixel-art result are mock-ups made for this plan: a rough line goes in, and a colorful, cute, still-sketchy picture of the same thing comes out.
+These are illustrations of the idea, not output from this project. The scribble and the ASCII train are mock-ups made for this plan: a rough line goes in, and the style you pick on the handheld decides how the train comes out. ASCII art is one example of a style.
 
 ## How it works
 
@@ -82,7 +82,7 @@ Related work:
 ## Image credits
 
 - The toy (Etch A Sketch with a Taj Mahal drawing): "Taj Mahal drawing on an Etch-A-Sketch" by Etcha, [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0), via [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Taj_Mahal_drawing_on_an_Etch-A-Sketch.jpg). Etch A Sketch is a trademark of its owner.
-- Rough scribble and pixel-art locomotive: made for this project.
+- Rough scribble and ASCII train: made for this project.
 
 ## Attribution
 
