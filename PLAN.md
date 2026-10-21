@@ -55,7 +55,7 @@ The app always makes 90s-style pixel art, and the buttons change how it looks:
 4. **Render.** The node checks the grid, enforces the palette, and renders it as a crisp image with the same look every time, then sends it back to the handheld.
 5. **Own language model (later).** Once the node hosts its own small model in Week 11, it can handle side jobs such as naming each picture.
 
-This is planned, not built. I will test it with a few real sketches first. If my Pro plan's limits or terms get in the way, the node can use a pay-as-you-go API key instead without changing the rest of the design.
+The node side of this is built and tested with one sketch: Claude drew a valid banana grid in about two minutes, and the code checks it, retries if needed, and renders it. The server, the handheld app and the device deploy are not built yet, and I still need to try more sketches. If my Pro plan's limits or terms get in the way, the node can use a pay-as-you-go API key instead without changing the rest of the design.
 
 The node and the handheld are both arm64, so code built on the node runs on the handheld.
 
