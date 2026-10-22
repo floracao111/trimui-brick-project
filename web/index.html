@@ -30,7 +30,7 @@
   <div><img id="art" alt="The pixel art will appear here"><div id="status">Draw something, then press Enter.</div></div>
 </div>
 <script>
-const W = 640, H = 480, SPEED = 4, MAX_POINTS = 4500;
+const W = 640, H = 480, SPEED = 1.5, MIN_STEP = 2, MAX_POINTS = 4500;
 const pad = document.getElementById("pad"), ctx = pad.getContext("2d");
 const art = document.getElementById("art"), statusEl = document.getElementById("status");
 const token = new URLSearchParams(location.hash.slice(1)).get("token");
@@ -77,7 +77,8 @@ function frame() {
       ctx.strokeStyle = "#2b2b2b"; ctx.lineWidth = 3; ctx.lineCap = "round";
       ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(nx, ny); ctx.stroke();
       x = nx; y = ny;
-      points.push([+(x / W).toFixed(4), +(y / H).toFixed(4)]);
+      const last = points[points.length - 1];
+      if (Math.hypot(x - last[0] * W, y - last[1] * H) >= MIN_STEP) points.push([+(x / W).toFixed(4), +(y / H).toFixed(4)]);
     }
   }
   requestAnimationFrame(frame);
@@ -87,6 +88,7 @@ async function send() {
   if (busy) return;
   if (points.length < 20) { statusEl.textContent = "Draw a bit more first."; return; }
   busy = true;
+  points.push([+(x / W).toFixed(4), +(y / H).toFixed(4)]);
   const started = Date.now();
   const tick = setInterval(() => {
     statusEl.textContent = "Drawing... " + Math.round((Date.now() - started) / 1000) + "s (about two minutes)";
