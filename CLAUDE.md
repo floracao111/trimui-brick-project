@@ -19,7 +19,8 @@ This repo lives on the student's laptop. You run here, on the laptop.
 1. Change files here, in this repo.
 2. `scripts/forge.sh test` copies the code to the node and runs the tests there.
 3. `scripts/forge.sh draw <sketch.png>` also asks Claude on the node to redraw a sketch.
-4. Show the student the real output, word for word. Never guess or invent output. If something
+4. `scripts/forge.sh serve` runs the server on the node with a tunnel; the laptop test page is at http://localhost:8765. The server listens on localhost only. Drawing is a job: POST /api/draw, then poll /api/jobs/<id>.
+5. Show the student the real output, word for word. Never guess or invent output. If something
    fails, show the error, fix the file here, and run again.
 
 Never edit files on the node by hand. If a file there is wrong, fix it here and copy it again.

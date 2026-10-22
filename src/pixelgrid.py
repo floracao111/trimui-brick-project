@@ -66,13 +66,8 @@ def render_svg(rows, palette=PALETTE, scale=16):
     )
 
 
-def render_png(rows, palette=PALETTE, scale=16):
-    """Return PNG bytes. Written by hand so it needs no image library."""
-    width, height = len(rows[0]) * scale, len(rows) * scale
-    raw = bytearray()
-    for row in rows:
-        line = b"".join(bytes(_rgb(palette[code][1])) * scale for code in row)
-        raw += (b"\x00" + line) * scale
+def png_from_raw(width, height, raw):
+    """Wrap raw RGB scanlines (each starting with a 0 filter byte) as PNG bytes."""
 
     def chunk(kind, data):
         body = kind + data
@@ -84,3 +79,12 @@ def render_png(rows, palette=PALETTE, scale=16):
         + chunk(b"IDAT", zlib.compress(bytes(raw), 9))
         + chunk(b"IEND", b"")
     )
+
+
+def render_png(rows, palette=PALETTE, scale=16):
+    """Return PNG bytes. Written by hand so it needs no image library."""
+    raw = bytearray()
+    for row in rows:
+        line = b"".join(bytes(_rgb(palette[code][1])) * scale for code in row)
+        raw += (b"\x00" + line) * scale
+    return png_from_raw(len(rows[0]) * scale, len(rows) * scale, raw)

@@ -14,11 +14,12 @@ Read the full plan in [PLAN.md](PLAN.md).
 
 ## What works so far
 
-On my Oracle node, Claude looks at a sketch and redraws it as a 32 by 24 pixel grid. The code checks the grid (size and palette), retries if it is wrong, and renders it as a PNG and SVG. The handheld app, the server, and getting code onto the Brick Pro are not built yet.
+On my Oracle node, a small server takes pen points, turns them into a sketch, and has Claude redraw it as a 32 by 24 pixel grid. The code checks the grid (size and palette), retries if it is wrong, and renders it as a PNG. A laptop test page lets me draw with the keyboard or a game controller and see the result. The handheld app and getting code onto the Brick Pro are not built yet.
 
 ```
 scripts/forge.sh test               # copy the code to the node and run the tests there
 scripts/forge.sh draw sketch.png    # redraw a sketch as pixel art; results land in out/
+scripts/forge.sh serve              # run the server on the node, then open http://localhost:8765
 ```
 
 The code is in `src/`, the tests in `tests/`, and `CLAUDE.md` is the briefing the AI reads first.

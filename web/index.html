@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stretch a Sketch (laptop test)</title>
+<style>
+  body { font-family: system-ui, sans-serif; background: #15121c; color: #eee; margin: 0; padding: 20px; }
+  h1 { margin: 0 0 4px; font-size: 22px; }
+  p { margin: 4px 0 14px; color: #bbb; }
+  .row { display: flex; gap: 24px; flex-wrap: wrap; align-items: flex-start; }
+  .frame { background: #c1272d; padding: 14px 14px 34px; border-radius: 10px; }
+  canvas, img { display: block; width: 480px; height: 360px; max-width: 100%; }
+  canvas { background: #cfd2ca; }
+  img:not([src]) { display: none; }
+  img { background: #000; image-rendering: pixelated; border: 4px solid #333; }
+  #status { margin-top: 10px; min-height: 1.4em; }
+  kbd { background: #333; border-radius: 4px; padding: 1px 6px; }
+</style>
+</head>
+<body>
+<h1>Stretch a Sketch</h1>
+<p>
+  Left knob: <kbd>A</kbd> <kbd>D</kbd> (or left stick). Right knob: <kbd>&uarr;</kbd> <kbd>&darr;</kbd> (or right stick).
+  Send: <kbd>Enter</kbd> (or button A). Clear: <kbd>Backspace</kbd> (or button B).
+  One continuous line, like the toy.
+</p>
+<div class="row">
+  <div><div class="frame"><canvas id="pad" width="640" height="480"></canvas></div></div>
+  <div><img id="art" alt="The pixel art will appear here"><div id="status">Draw something, then press Enter.</div></div>
+</div>
+<script>
+const W = 640, H = 480, SPEED = 4, MAX_POINTS = 4500;
+const pad = document.getElementById("pad"), ctx = pad.getContext("2d");
+const art = document.getElementById("art"), statusEl = document.getElementById("status");
+const token = new URLSearchParams(location.hash.slice(1)).get("token");
+const headers = token ? { "X-Token": token } : {};
+let x = W / 2, y = H / 2, points = [[x / W, y / H]], busy = false, wasA = false, wasB = false;
+const keys = new Set();
+
+addEventListener("keydown", e => {
+  keys.add(e.key.toLowerCase());
+  if (e.key === "Enter") send();
+  if (e.key === "Backspace") clearPad();
+  if (e.key.startsWith("Arrow")) e.preventDefault();
+});
+addEventListener("keyup", e => keys.delete(e.key.toLowerCase()));
+
+function clearPad() {
+  if (busy) return;
+  ctx.clearRect(0, 0, W, H);
+  points = [[x / W, y / H]];
+  statusEl.textContent = "Cleared. Draw something, then press Enter.";
+}
+
+function dead(v) { return Math.abs(v) > 0.15 ? v : 0; }
+
+function frame() {
+  const pads = navigator.getGamepads ? [...navigator.getGamepads()].filter(Boolean) : [];
+  const gp = pads[0];
+  if (gp) {
+    const a = gp.buttons[0] && gp.buttons[0].pressed, b = gp.buttons[1] && gp.buttons[1].pressed;
+    if (a && !wasA) send();
+    if (b && !wasB) clearPad();
+    wasA = a; wasB = b;
+  }
+  if (!busy) {
+    let dx = 0, dy = 0;
+    if (keys.has("a")) dx -= 1;
+    if (keys.has("d")) dx += 1;
+    if (keys.has("arrowup")) dy -= 1;
+    if (keys.has("arrowdown")) dy += 1;
+    if (gp) { dx += dead(gp.axes[0] || 0); dy += dead(gp.axes[3] || 0); }
+    dx = Math.max(-1, Math.min(1, dx)); dy = Math.max(-1, Math.min(1, dy));
+    if ((dx || dy) && points.length < MAX_POINTS) {
+      const nx = Math.max(0, Math.min(W - 1, x + dx * SPEED)), ny = Math.max(0, Math.min(H - 1, y + dy * SPEED));
+      ctx.strokeStyle = "#2b2b2b"; ctx.lineWidth = 3; ctx.lineCap = "round";
+      ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(nx, ny); ctx.stroke();
+      x = nx; y = ny;
+      points.push([+(x / W).toFixed(4), +(y / H).toFixed(4)]);
+    }
+  }
+  requestAnimationFrame(frame);
+}
+
+async function send() {
+  if (busy) return;
+  if (points.length < 20) { statusEl.textContent = "Draw a bit more first."; return; }
+  busy = true;
+  const started = Date.now();
+  const tick = setInterval(() => {
+    statusEl.textContent = "Drawing... " + Math.round((Date.now() - started) / 1000) + "s (about two minutes)";
+  }, 500);
+  try {
+    const res = await fetch("/api/draw", { method: "POST", headers: { ...headers, "Content-Type": "application/json" }, body: JSON.stringify({ points }) });
+    const body = await res.json();
+    if (!res.ok) throw new Error(body.error || res.status);
+    for (;;) {
+      await new Promise(r => setTimeout(r, 2000));
+      const job = await (await fetch("/api/jobs/" + body.id, { headers })).json();
+      if (job.status === "error") throw new Error(job.error);
+      if (job.status === "done") {
+        const png = await (await fetch("/api/jobs/" + body.id + "/art.png", { headers })).blob();
+        art.src = URL.createObjectURL(png);
+        statusEl.textContent = "It looks like: " + job.subject + " (" + job.seconds + "s, " + job.attempts + " attempt" + (job.attempts > 1 ? "s" : "") + "). Backspace to draw again.";
+        break;
+      }
+    }
+  } catch (err) {
+    statusEl.textContent = "Something went wrong: " + err.message;
+  } finally {
+    clearInterval(tick);
+    busy = false;
+  }
+}
+
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>
