@@ -24,7 +24,7 @@ case "${1:-}" in
     push_code
     scp -q "$2" "$NODE:$DIR/sketch.png"
     ssh "$NODE" "cd $DIR && PATH=\$HOME/.local/bin:\$PATH python3 src/artist.py sketch.png -o out"
-    mkdir -p out && scp -q "$NODE:$DIR/out/art.png" "$NODE:$DIR/out/art.svg" out/
+    mkdir -p out && scp -q "$NODE:$DIR/out/art.png" "$NODE:$DIR/out/art.svg" "$NODE:$DIR/out/grid.json" out/
     echo "saved out/art.png and out/art.svg"
     ;;
   serve)

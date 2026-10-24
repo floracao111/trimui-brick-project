@@ -4,18 +4,28 @@ import re
 import struct
 import zlib
 
-GRID_W, GRID_H = 32, 24
+GRID_W, GRID_H = 64, 48  # 4:3, and 16x this is 1024x768, the Brick Pro's screen
 
-# code -> (what it is for, color)
+# code -> (name, color). The model picks the background and colors from these.
 PALETTE = {
-    ".": ("black background", "#000000"),
-    "Y": ("bright yellow, main body color", "#ffe51a"),
-    "S": ("shade", "#f5b800"),
-    "D": ("deep shade", "#d98e00"),
-    "O": ("dark outline", "#6b3d00"),
-    "B": ("stem brown", "#8a5a00"),
-    "K": ("very dark tip", "#3b2000"),
-    "W": ("white", "#ffffff"),
+    "k": ("black", "#0d0d14"),
+    "w": ("white", "#ffffff"),
+    "g": ("light gray", "#a8a8b8"),
+    "G": ("dark gray", "#55556a"),
+    "r": ("red", "#e63946"),
+    "R": ("dark red", "#8f1d2c"),
+    "o": ("orange", "#ff8a1f"),
+    "y": ("bright yellow", "#ffe51a"),
+    "Y": ("gold", "#d9a400"),
+    "l": ("lime green", "#7be04a"),
+    "n": ("dark green", "#1f8a3a"),
+    "c": ("cyan", "#45d6ff"),
+    "b": ("blue", "#2f6bff"),
+    "B": ("navy", "#1a2a7a"),
+    "p": ("purple", "#8a3ffc"),
+    "m": ("pink", "#ff5fb0"),
+    "t": ("skin tan", "#f2c9a0"),
+    "T": ("brown", "#7a4a1e"),
 }
 
 
@@ -44,6 +54,58 @@ def validate(rows, width=GRID_W, height=GRID_H, palette=PALETTE):
         if bad:
             problems.append(f"row {i} uses codes not in the palette: {''.join(bad)}")
     return problems
+
+
+def _longest_run(items):
+    """Return (length, start) of the longest run of equal neighbours."""
+    best, i = (0, 0), 0
+    while i < len(items):
+        j = i
+        while j + 1 < len(items) and items[j + 1] == items[i]:
+            j += 1
+        if j - i + 1 > best[0]:
+            best = (j - i + 1, i)
+        i = j + 1
+    return best
+
+
+def _fix_length(row, width):
+    """Add or remove single pixels from the longest run, where nobody will see it."""
+    while len(row) != width:
+        run, i = _longest_run(row)
+        if len(row) < width:
+            row = row[:i] + row[i] + row[i:]
+        elif run >= 2:
+            row = row[:i] + row[i + 1:]
+        else:
+            row = row[:-1]
+    return row
+
+
+def repair(rows, width=GRID_W, height=GRID_H, max_off=4):
+    """Fix small counting slips. Returns (rows, number_of_fixes). Big errors are left for validate()."""
+    if not isinstance(rows, list) or not all(isinstance(r, str) for r in rows):
+        return rows, 0
+    if abs(len(rows) - height) > max_off or any(abs(len(r) - width) > max_off for r in rows):
+        return rows, 0
+    fixes = 0
+    rows = list(rows)
+    while len(rows) != height:
+        run, i = _longest_run(rows)
+        if len(rows) < height:
+            rows.insert(i, rows[i])
+        elif run >= 2:
+            del rows[i]
+        else:
+            rows.pop()
+        fixes += 1
+    fixed = []
+    for row in rows:
+        if len(row) != width:
+            row = _fix_length(row, width)
+            fixes += 1
+        fixed.append(row)
+    return fixed, fixes
 
 
 def _rgb(hex_color):

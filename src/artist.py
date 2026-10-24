@@ -4,13 +4,20 @@ Runs on the node. It calls Claude Code in headless mode, signed in with my Claud
 ANTHROPIC_API_KEY is removed from the environment so usage goes to the subscription.
 """
 import argparse
+import json
 import os
 import subprocess
 import sys
 
-from pixelgrid import GRID_H, GRID_W, PALETTE, parse_reply, render_png, render_svg, validate
+from pixelgrid import GRID_H, GRID_W, PALETTE, parse_reply, render_png, render_svg, repair, validate
 
-PROMPT = """Read the image at {path}. It is a rough single-line sketch drawn with a joystick on a toy-like gray screen. Decide what it shows, then redraw it as 90s video-game pixel art on a grid that is exactly {w} columns wide and {h} rows tall, centered on a black background.
+PROMPT = """Read the image at {path}. It is a rough single-line sketch drawn with a joystick on a toy-like gray screen. Decide what it shows, then redraw it as detailed 90s video-game pixel art on a grid that is exactly {w} columns wide and {h} rows tall.
+
+Art direction:
+- Make the subject fill most of the grid.
+- Give it a dark outline and two or three shading tones for each color.
+- Use colors that suit the subject, not just one color.
+- Choose the background color yourself, any color in the palette (not always black), one that makes the subject stand out. Fill the whole background with it. You may add small background details such as ground, sky or stars.
 
 Use only these palette codes, one character per pixel:
 {palette}
@@ -38,11 +45,13 @@ def build_prompt(path, problems=None, w=GRID_W, h=GRID_H, palette=PALETTE):
     return prompt
 
 
-def run_claude(prompt, timeout=280, model=None):
+def run_claude(prompt, timeout=560, model=None, effort=None):
     env = {k: v for k, v in os.environ.items() if k != "ANTHROPIC_API_KEY"}
     cmd = ["claude", "-p", prompt, "--allowedTools", "Read", "--output-format", "text"]
     if model:
         cmd += ["--model", model]
+    # Low effort drew a good 64x48 banana in about 78 s; the default took about 196 s.
+    cmd += ["--effort", effort or os.environ.get("STRETCH_EFFORT", "low")]
     done = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout, env=env, stdin=subprocess.DEVNULL)
     if done.returncode != 0:
         raise GridError(f"claude exited with {done.returncode}: {done.stderr.strip()[:300]}")
@@ -56,11 +65,12 @@ def draw(path, run=run_claude, attempts=3):
         reply = run(build_prompt(path, problems))
         try:
             data = parse_reply(reply)
+            data["rows"], fixes = repair(data["rows"])
             problems = validate(data["rows"])
         except ValueError as err:
             problems = [str(err)]
         if not problems:
-            return {"subject": data.get("subject", ""), "rows": data["rows"], "attempts": attempt}
+            return {"subject": data.get("subject", ""), "rows": data["rows"], "attempts": attempt, "repaired": fixes}
     raise GridError(f"no valid grid after {attempts} attempts: {problems}")
 
 
@@ -71,6 +81,8 @@ def main():
     args = parser.parse_args()
     result = draw(os.path.abspath(args.sketch))
     os.makedirs(args.out, exist_ok=True)
+    with open(os.path.join(args.out, "grid.json"), "w") as f:
+        json.dump({"subject": result["subject"], "rows": result["rows"]}, f, indent=1)
     with open(os.path.join(args.out, "art.svg"), "w") as f:
         f.write(render_svg(result["rows"]))
     with open(os.path.join(args.out, "art.png"), "wb") as f:

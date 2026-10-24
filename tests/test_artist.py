@@ -32,6 +32,12 @@ class DrawTests(unittest.TestCase):
         self.assertEqual(result["attempts"], 1)
         self.assertEqual(result["subject"], "banana")
 
+    def test_a_one_character_slip_is_repaired_without_a_retry(self):
+        slip = json.loads(GOOD)
+        slip["rows"][4] = slip["rows"][4] + slip["rows"][4][-1]
+        result = draw(SKETCH, run=FakeClaude(json.dumps(slip)))
+        self.assertEqual((result["attempts"], result["repaired"]), (1, 1))
+
     def test_bad_reply_is_retried_with_the_problems(self):
         fake = FakeClaude('{"subject": "x", "rows": ["too short"]}', GOOD)
         result = draw(SKETCH, run=fake)
@@ -46,8 +52,9 @@ class DrawTests(unittest.TestCase):
     def test_prompt_names_the_image_and_the_palette(self):
         prompt = build_prompt("/tmp/sketch.png")
         self.assertIn("/tmp/sketch.png", prompt)
-        self.assertIn("Y = bright yellow", prompt)
-        self.assertIn("32 columns", prompt)
+        self.assertIn("r = red", prompt)
+        self.assertIn("64 columns", prompt)
+        self.assertIn("not always black", prompt)
 
 
 if __name__ == "__main__":

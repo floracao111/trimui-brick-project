@@ -32,8 +32,8 @@ Never edit files on the node by hand. If a file there is wrong, fix it here and 
 - `ANTHROPIC_API_KEY` must stay unset on the node. The node uses the student's Claude account, not
   an API key.
 - Never put logins, tokens, keys, or anything from `~/.claude` into this repo.
-- Pixel grids are 32 columns by 24 rows, one character per pixel, using only the codes in
-  `src/pixelgrid.py`. Change the palette there, not in prompts.
+- Pixel grids are 64 columns by 48 rows, one character per pixel, using only the codes in
+  `src/pixelgrid.py`. The model chooses the background and colors from that palette. Change the palette there, not in prompts.
 - Keep `PLAN.md` and `README.md` honest: mark what is planned and what is tested.
 - Before running each command, say in one sentence what it does.
 

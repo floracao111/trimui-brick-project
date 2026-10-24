@@ -33,8 +33,8 @@ These are illustrations of the idea, not output from this project. The scribble 
 
 The app always makes 90s-style pixel art, and the buttons change how it looks:
 
-- **Palette.** For example classic 16 colors, a green handheld look, or bright arcade colors.
-- **Pixel size.** Chunky 8-bit or finer 16-bit.
+- **Palette.** The model already picks colors and a background to suit each sketch. The buttons will steer it, for example a green handheld look or bright arcade colors.
+- **Pixel size.** Chunky 32 by 24 or fine 64 by 48.
 - **Outline and shading.** Turn the dark outline and the shading tones on or off.
 - **Subject.** A single sprite, an item, or a small scene.
 - **Background.** Black, a flat color, or transparent.
@@ -50,12 +50,12 @@ The app always makes 90s-style pixel art, and the buttons change how it looks:
 ```
 
 1. **Handheld app.** A small native app. Left stick moves the pen horizontally, right stick vertically. Buttons change the options, send the sketch, and clear the screen.
-2. **Node server.** Runs on my Oracle cloud node. It receives the sketch and asks Claude Code, running on the node and signed in with my Claude Pro account, to look at it and reply with a pixel grid in the chosen palette and options.
-3. **Claude (Sonnet 5.5).** Looks at the sketch and draws it as a small grid of palette codes, like a sprite. A language model writes pixel art well because pixel art is just a small grid.
-4. **Render.** The node checks the grid, enforces the palette, and renders it as a crisp image with the same look every time, then sends it back to the handheld.
+2. **Node server.** Runs on my Oracle cloud node. It receives the sketch and asks Claude Code, running on the node and signed in with my Claude Pro account, to look at it and reply with a pixel grid in the palette, choosing its own colors and background for each sketch.
+3. **Claude (Sonnet 5.5).** Looks at the sketch and draws it as a 64 by 48 grid of palette codes, like a sprite. A language model writes pixel art well because pixel art is just a small grid.
+4. **Render.** The node checks the grid, fixes small counting slips (a row off by one pixel), retries if it is badly wrong, enforces the palette, and renders it as a crisp image with the same look every time, then sends it back to the handheld.
 5. **Own language model (later).** Once the node hosts its own small model in Week 11, it can handle side jobs such as naming each picture.
 
-The node side of this is built and tested with one sketch: Claude drew a valid banana grid in about two minutes, and the code checks it, retries if needed, and renders it. The server, the handheld app and the device deploy are not built yet, and I still need to try more sketches. If my Pro plan's limits or terms get in the way, the node can use a pay-as-you-go API key instead without changing the rest of the design.
+The node side of this is built and tested with four sketches (banana, star, house, fish): each came back valid with its own colors and background (the star, house and fish in 72 to 106 seconds at low effort; the banana took about three minutes at default effort). The server, the handheld app and the device deploy are not built yet, and I still need to try more sketches. If my Pro plan's limits or terms get in the way, the node can use a pay-as-you-go API key instead without changing the rest of the design.
 
 The node and the handheld are both arm64, so code built on the node runs on the handheld.
 

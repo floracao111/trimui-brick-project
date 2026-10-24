@@ -126,7 +126,7 @@ async function send() {
   points.push([+(x / W).toFixed(4), +(y / H).toFixed(4)]);
   const started = Date.now();
   const tick = setInterval(() => {
-    statusEl.textContent = "Drawing... " + Math.round((Date.now() - started) / 1000) + "s (about two minutes)";
+    statusEl.textContent = "Drawing... " + Math.round((Date.now() - started) / 1000) + "s (usually one to three minutes)";
   }, 500);
   try {
     const res = await fetch("/api/draw", { method: "POST", headers: { ...headers, "Content-Type": "application/json" }, body: JSON.stringify({ points }) });
