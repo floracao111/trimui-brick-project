@@ -3,71 +3,234 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Stretch a Sketch (laptop test)</title>
+<title>Stretch a Sketch</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 <style>
-  body { font-family: system-ui, sans-serif; background: #15121c; color: #eee; margin: 0; padding: 20px; }
-  h1 { margin: 0 0 4px; font-size: 22px; }
-  p { margin: 4px 0 14px; color: #bbb; }
-  .row { display: flex; gap: 24px; flex-wrap: wrap; align-items: flex-start; }
-  .frame { background: #c1272d; padding: 14px 14px 34px; border-radius: 10px; }
-  canvas, img { display: block; width: 480px; height: 360px; max-width: 100%; }
-  #pad { background: #cfd2ca; }
-  #cursor { position: absolute; left: 0; top: 0; pointer-events: none; }
-  .stack { position: relative; }
-  small { color: #888; }
-  img:not([src]) { display: none; }
-  img { background: #000; image-rendering: pixelated; border: 4px solid #333; }
-  #scheme { margin-top: 10px; color: #9be; }
-  #status { margin-top: 6px; min-height: 1.4em; }
-  kbd { background: #333; border-radius: 4px; padding: 1px 6px; }
+  :root {
+    --pixel: "Press Start 2P", "Courier New", monospace;
+    --red-1: #e2413f; --red-2: #b21f2a; --red-3: #7e1220;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0; padding: 18px 28px 14px; color: #efe9ff; font-family: system-ui, sans-serif;
+    background:
+      linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px) 0 0 / 100% 6px,
+      radial-gradient(1200px 700px at 20% 0%, #3a1d78 0%, transparent 60%),
+      radial-gradient(1000px 700px at 100% 100%, #5a1458 0%, transparent 55%),
+      #120b2e;
+    min-height: 100vh; display: flex; flex-direction: column;
+  }
+
+  header { margin-bottom: 14px; }
+  h1 {
+    margin: 0; display: inline-block; font-family: var(--pixel); font-weight: 400; text-transform: uppercase;
+    font-size: clamp(16px, 2.5vw, 40px); letter-spacing: .05em; line-height: 1.1;
+    transform: scaleX(1.75); transform-origin: left center;
+    background: linear-gradient(#fff9a8 0%, #ffd23a 35%, #ff7a2e 62%, #ff2e8a 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    filter: drop-shadow(3px 3px 0 #2a0a55) drop-shadow(6px 6px 0 rgba(0,0,0,.35));
+  }
+  .tag { margin: 10px 0 0; font-family: var(--pixel); font-size: clamp(7px, .8vw, 11px); color: #b9a8ff; letter-spacing: .08em; }
+  #ver { margin-left: 10px; color: #6e6199; font-family: system-ui, sans-serif; letter-spacing: 0; font-size: 11px; }
+
+  .grid { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 28px; align-items: start; }
+  @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } h1 { transform: scaleX(1.3); } }
+
+  .frame {
+    background: linear-gradient(160deg, var(--red-1), var(--red-2) 55%, var(--red-3));
+    padding: 18px 18px 14px; border-radius: 20px;
+    box-shadow: inset 0 3px 0 rgba(255,255,255,.28), inset 0 -5px 0 rgba(0,0,0,.28), 0 14px 30px rgba(0,0,0,.45);
+  }
+  .screen {
+    position: relative; width: 100%; aspect-ratio: 4 / 3; border-radius: 8px; overflow: hidden;
+    box-shadow: inset 0 0 0 4px rgba(0,0,0,.35), inset 0 6px 14px rgba(0,0,0,.35);
+  }
+  .screen.pad { background: #cfd2ca; }
+  .screen.display { background: #05030c; }
+  .screen canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  .screen img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; image-rendering: pixelated; }
+  .screen img:not([src]) { display: none; }
+  .plate { margin-top: 12px; text-align: center; font-family: var(--pixel); font-size: clamp(8px, .9vw, 12px); color: #ffd98a; letter-spacing: .25em; text-shadow: 0 2px 0 rgba(0,0,0,.4); }
+
+  #overlay {
+    position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px;
+    font-family: var(--pixel); font-size: clamp(8px, 1vw, 13px); color: #8f83bd; text-align: center; line-height: 1.8; padding: 20px;
+  }
+  #overlay.busy { background: rgba(5, 3, 12, .72); color: #ffe27a; }
+  #overlay.hidden { display: none; }
+  .blocks { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; width: 76px; }
+  .blocks i { display: block; aspect-ratio: 1; background: #ffe27a; animation: blink 1s steps(1) infinite; }
+  .blocks i:nth-child(4n+2) { animation-delay: .25s; } .blocks i:nth-child(4n+3) { animation-delay: .5s; } .blocks i:nth-child(4n) { animation-delay: .75s; }
+  @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: .15; } }
+  #overlay:not(.busy) .blocks { display: none; }
+
+  .controls {
+    margin-top: 18px; display: flex; align-items: center; justify-content: space-around; gap: 12px; padding: 16px 12px 12px;
+    background: linear-gradient(#241a4d, #170f35); border-radius: 22px; border: 3px solid #3a2c76;
+    box-shadow: inset 0 2px 0 rgba(255,255,255,.08), 0 10px 22px rgba(0,0,0,.35);
+  }
+  .stickbox { text-align: center; flex: 0 1 190px; }
+  .stick { width: 100%; max-width: 170px; display: block; margin: 0 auto; }
+  .label { font-family: var(--pixel); font-size: 9px; color: #b9a8ff; line-height: 1.7; margin-top: 8px; }
+  .label b { color: #ffd98a; font-weight: 400; }
+  .btns { position: relative; width: 170px; height: 170px; flex: 0 0 170px; }
+  .btn {
+    position: absolute; width: 58px; height: 58px; border-radius: 50%; border: 3px solid rgba(0,0,0,.45); cursor: pointer;
+    font-family: var(--pixel); font-size: 13px; color: #fff; text-shadow: 0 2px 0 rgba(0,0,0,.45);
+    box-shadow: 0 6px 0 rgba(0,0,0,.45), inset 0 3px 0 rgba(255,255,255,.35); transition: transform .06s, box-shadow .06s, filter .06s;
+  }
+  .btn small { display: block; font-size: 6px; margin-top: 3px; letter-spacing: .05em; }
+  .btn.down { transform: translateY(5px); box-shadow: 0 1px 0 rgba(0,0,0,.45), inset 0 3px 0 rgba(255,255,255,.2); filter: brightness(1.35); }
+  .btn.x { left: 0; top: 56px; background: #3b82f6; } .btn.y { left: 56px; top: 0; background: #e8b81f; }
+  .btn.a { left: 56px; top: 112px; background: #27ae60; } .btn.b { left: 112px; top: 56px; background: #e0414f; }
+
+  .info { margin-top: 18px; font-size: 15px; line-height: 1.6; }
+  #scheme { font-family: var(--pixel); font-size: clamp(8px, .85vw, 12px); color: #8fe3ff; line-height: 1.8; }
+  #status { margin-top: 10px; font-size: clamp(14px, 1.15vw, 18px); color: #f4eeff; min-height: 2.8em; }
+  footer { margin-top: 16px; font-size: 12.5px; color: #8f83bd; line-height: 1.9; }
+  kbd { background: #2b2158; border: 1px solid #4a3c8f; border-radius: 4px; padding: 1px 6px; font-family: inherit; color: #e6ddff; }
 </style>
 </head>
 <body>
-<h1>Stretch a Sketch</h1>
-<p>
-  Move: <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> or the arrow keys (press two for a diagonal), or either stick in any direction.
-  First, move to where you want to start and press <kbd>Space</kbd> (or button X) to put the pen down.
-  After that it is one continuous line, like the toy, and you can't lift it.
-  Send: <kbd>Enter</kbd> (or button A). Clear and pick a new start: <kbd>Backspace</kbd> (or button B).
-  Color scheme: <kbd>C</kbd> (or button Y) cycles through them.
-</p>
-<small id="ver"></small>
-<div class="row">
-  <div><div class="frame"><div class="stack"><canvas id="pad" width="640" height="480"></canvas><canvas id="cursor" width="640" height="480"></canvas></div></div></div>
-  <div><img id="art" alt="The pixel art will appear here"><div id="scheme"></div><div id="status"></div></div>
-</div>
+<header>
+  <h1>Stretch a Sketch</h1>
+  <p class="tag">DRAW A ROUGH LINE. THE AI STRETCHES IT INTO 90S PIXEL ART. <span id="ver"></span></p>
+</header>
+
+<main class="grid">
+  <section>
+    <div class="frame">
+      <div class="screen pad"><canvas id="pad" width="640" height="480"></canvas><canvas id="cursor" width="640" height="480"></canvas></div>
+      <div class="plate">SKETCH PAD</div>
+    </div>
+    <div class="controls">
+      <div class="stickbox">
+        <svg class="stick" id="stickL" viewBox="-70 -70 140 140">
+          <defs>
+            <radialGradient id="baseL" cx="40%" cy="35%"><stop offset="0" stop-color="#4d4d68"/><stop offset="1" stop-color="#15151f"/></radialGradient>
+            <radialGradient id="capL" cx="35%" cy="30%"><stop offset="0" stop-color="#ffb3c8"/><stop offset=".55" stop-color="#e8406b"/><stop offset="1" stop-color="#8f1d3a"/></radialGradient>
+          </defs>
+          <circle r="66" fill="url(#baseL)" stroke="#000" stroke-opacity=".5" stroke-width="3"/>
+          <circle r="48" fill="#0a0a11" stroke="#2c2c3e" stroke-width="3"/>
+          <line class="shaft" stroke="#2a2a38" stroke-width="15" stroke-linecap="round"/>
+          <circle class="shadow" r="31" fill="#000" opacity=".4"/>
+          <circle class="cap" r="29" fill="url(#capL)" stroke="#5a1228" stroke-width="2"/>
+          <circle class="dimple" r="13" fill="none" stroke="#fff" stroke-opacity=".38" stroke-width="2"/>
+        </svg>
+        <div class="label">LEFT STICK<br><b>W A S D</b></div>
+      </div>
+      <div class="btns">
+        <button class="btn y" data-action="scheme" aria-label="Change color scheme">Y<small>COLOR</small></button>
+        <button class="btn x" data-action="pen" aria-label="Put the pen down">X<small>PEN</small></button>
+        <button class="btn b" data-action="clear" aria-label="Clear">B<small>CLEAR</small></button>
+        <button class="btn a" data-action="send" aria-label="Send">A<small>SEND</small></button>
+      </div>
+      <div class="stickbox">
+        <svg class="stick" id="stickR" viewBox="-70 -70 140 140">
+          <defs>
+            <radialGradient id="baseR" cx="40%" cy="35%"><stop offset="0" stop-color="#4d4d68"/><stop offset="1" stop-color="#15151f"/></radialGradient>
+            <radialGradient id="capR" cx="35%" cy="30%"><stop offset="0" stop-color="#a9e4ff"/><stop offset=".55" stop-color="#3d9be0"/><stop offset="1" stop-color="#1b4f86"/></radialGradient>
+          </defs>
+          <circle r="66" fill="url(#baseR)" stroke="#000" stroke-opacity=".5" stroke-width="3"/>
+          <circle r="48" fill="#0a0a11" stroke="#2c2c3e" stroke-width="3"/>
+          <line class="shaft" stroke="#2a2a38" stroke-width="15" stroke-linecap="round"/>
+          <circle class="shadow" r="31" fill="#000" opacity=".4"/>
+          <circle class="cap" r="29" fill="url(#capR)" stroke="#12385f" stroke-width="2"/>
+          <circle class="dimple" r="13" fill="none" stroke="#fff" stroke-opacity=".38" stroke-width="2"/>
+        </svg>
+        <div class="label">RIGHT STICK<br><b>ARROW KEYS</b></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="frame">
+      <div class="screen display">
+        <img id="art" alt="The pixel art made from your sketch">
+        <div id="overlay"><div class="blocks"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><div id="overlayText">YOUR PIXEL ART<br>WILL APPEAR HERE</div></div>
+      </div>
+      <div class="plate">PIXEL VIEWER</div>
+    </div>
+    <div class="info">
+      <div id="scheme"></div>
+      <div id="status"></div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  Move the pen with either stick (or <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> and the arrow keys; press two for a diagonal).
+  Choose where to start, then <kbd>Space</kbd> puts the pen down. After that it is one continuous line.
+  <kbd>Enter</kbd> sends it, <kbd>Backspace</kbd> clears it, <kbd>C</kbd> changes the color scheme. A game controller works too.
+</footer>
+
 <script>
 const W = 640, H = 480, SPEED = 90, MIN_STEP = 2, MAX_POINTS = 4500; // SPEED is pixels per second
-document.getElementById("ver").textContent = "version 5: pen speed " + SPEED + " px/s";
+document.getElementById("ver").textContent = "version 6";
 const pad = document.getElementById("pad"), ctx = pad.getContext("2d");
 const cur = document.getElementById("cursor").getContext("2d");
 const art = document.getElementById("art"), statusEl = document.getElementById("status");
+const overlay = document.getElementById("overlay"), overlayText = document.getElementById("overlayText");
 const token = new URLSearchParams(location.hash.slice(1)).get("token");
 const headers = token ? { "X-Token": token } : {};
-let x = W / 2, y = H / 2, points = [], penDown = false, busy = false, wasA = false, wasB = false, wasX = false;
+let x = W / 2, y = H / 2, points = [], penDown = false, busy = false;
 const START_HINT = "Move to where you want to start, then press Space (or X) to put the pen down.";
 statusEl.textContent = START_HINT;
 const keys = new Set();
-let schemeNames = ["random"], schemeInfo = {}, schemeIdx = 0, wasY = false;
+
+// ---------- color schemes ----------
+let schemeNames = ["random"], schemeInfo = {}, schemeIdx = 0;
 const schemeEl = document.getElementById("scheme");
 function showScheme() {
   const name = schemeNames[schemeIdx];
-  schemeEl.textContent = "Color scheme: " + name + (schemeInfo[name] ? " (" + schemeInfo[name] + ")" : " (a surprise each time)");
+  schemeEl.innerHTML = "COLOR SCHEME: " + name.toUpperCase() + "<br><span style='color:#8f83bd'>" + (schemeInfo[name] || "a surprise each time") + "</span>";
 }
 function nextScheme() { if (!busy) { schemeIdx = (schemeIdx + 1) % schemeNames.length; showScheme(); } }
 fetch("/api/schemes", { headers }).then(r => r.json()).then(d => { schemeInfo = d.schemes; schemeNames = ["random", ...Object.keys(d.schemes)]; showScheme(); }).catch(() => showScheme());
 showScheme();
 
-addEventListener("keydown", e => {
-  keys.add(e.key.toLowerCase());
-  if (e.key === "Enter") send();
-  if (e.key === "Backspace") clearPad();
-  if (e.key === " ") putPenDown();
-  if (e.key.toLowerCase() === "c") nextScheme();
-  if (e.key.startsWith("Arrow") || e.key === " ") e.preventDefault();
+// ---------- on-screen controller ----------
+const sticks = ["L", "R"].map(side => {
+  const svg = document.getElementById("stick" + side);
+  return { svg, shaft: svg.querySelector(".shaft"), shadow: svg.querySelector(".shadow"), cap: svg.querySelector(".cap"), dimple: svg.querySelector(".dimple"), px: 0, py: 0 };
 });
-addEventListener("keyup", e => keys.delete(e.key.toLowerCase()));
+function drawStick(s, tx, ty, dt) {
+  const k = Math.min(1, dt * 22);
+  s.px += (tx - s.px) * k; s.py += (ty - s.py) * k;
+  const reach = 27, cx = s.px * reach, cy = s.py * reach, lift = 1 + 0.08 * Math.hypot(s.px, s.py);
+  s.shaft.setAttribute("x1", 0); s.shaft.setAttribute("y1", 0); s.shaft.setAttribute("x2", cx); s.shaft.setAttribute("y2", cy);
+  s.shadow.setAttribute("cx", cx * 1.2 + 3); s.shadow.setAttribute("cy", cy * 1.2 + 6);
+  s.cap.setAttribute("cx", cx); s.cap.setAttribute("cy", cy); s.cap.setAttribute("r", 29 * lift);
+  s.dimple.setAttribute("cx", cx); s.dimple.setAttribute("cy", cy);
+}
+const buttonEls = Object.fromEntries([...document.querySelectorAll(".btn")].map(b => [b.dataset.action, b]));
+function flash(action, on) { if (buttonEls[action]) buttonEls[action].classList.toggle("down", on); }
+const actions = { send: () => send(), clear: () => clearPad(), pen: () => putPenDown(), scheme: () => nextScheme() };
+for (const [name, el] of Object.entries(buttonEls)) {
+  el.addEventListener("mousedown", () => { flash(name, true); actions[name](); });
+  el.addEventListener("mouseup", () => flash(name, false));
+  el.addEventListener("mouseleave", () => flash(name, false));
+  el.addEventListener("keydown", e => e.preventDefault());
+}
 
+// ---------- keyboard ----------
+const keyAction = { " ": "pen", Enter: "send", Backspace: "clear", c: "scheme" };
+addEventListener("keydown", e => {
+  const k = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+  keys.add(k);
+  if (!e.repeat && keyAction[k]) { flash(keyAction[k], true); actions[keyAction[k]](); }
+  if (k.startsWith("Arrow") || k === " " || k === "Backspace") e.preventDefault();
+});
+addEventListener("keyup", e => {
+  const k = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+  keys.delete(k);
+  if (keyAction[k]) flash(keyAction[k], false);
+});
+
+// ---------- drawing ----------
 function putPenDown() {
   if (busy || penDown) return;
   penDown = true;
@@ -90,14 +253,15 @@ function stick(ax, ay) {
   const k = Math.min(1, (m - 0.15) / 0.85) / m;
   return [ax * k, ay * k];
 }
+function unit(v) { const m = Math.hypot(v[0], v[1]); return m > 1 ? [v[0] / m, v[1] / m] : v; }
 
-let lastTime = 0, aimX = 0, aimY = 0;
+let lastTime = 0, aimX = 0, aimY = 0, wasPad = [false, false, false, false];
 
 function drawCursor() {
   cur.clearRect(0, 0, W, H);
   const pulse = 1 + 0.15 * Math.sin(performance.now() / 150);
-  cur.lineCap = "round";
   const ink = penDown ? "#ff2e63" : "#1f8fff"; // pink-red when drawing, blue while choosing a start point
+  cur.lineCap = "round";
   for (const [color, width] of [["#ffffff", 6], [ink, 3]]) {
     cur.strokeStyle = color; cur.lineWidth = width;
     cur.beginPath(); cur.arc(x, y, 9 * pulse, 0, Math.PI * 2); cur.stroke();
@@ -122,27 +286,27 @@ function frame(now) {
   const pads = navigator.getGamepads ? [...navigator.getGamepads()].filter(Boolean) : [];
   const gp = pads[0];
   if (gp) {
-    const a = gp.buttons[0] && gp.buttons[0].pressed, b = gp.buttons[1] && gp.buttons[1].pressed, bx = gp.buttons[2] && gp.buttons[2].pressed, by = gp.buttons[3] && gp.buttons[3].pressed;
-    if (a && !wasA) send();
-    if (b && !wasB) clearPad();
-    if (bx && !wasX) putPenDown();
-    if (by && !wasY) nextScheme();
-    wasA = a; wasB = b; wasX = bx; wasY = by;
+    const now4 = [0, 1, 2, 3].map(i => !!(gp.buttons[i] && gp.buttons[i].pressed));
+    const map = ["send", "clear", "pen", "scheme"]; // A, B, X, Y
+    now4.forEach((down, i) => {
+      if (down !== wasPad[i]) { flash(map[i], down); if (down) actions[map[i]](); }
+    });
+    wasPad = now4;
   }
+  // left stick: W A S D (or the pad's left stick). right stick: the arrow keys (or the pad's right stick).
+  let l = [0, 0], r = [0, 0];
+  if (keys.has("a")) l[0] -= 1; if (keys.has("d")) l[0] += 1; if (keys.has("w")) l[1] -= 1; if (keys.has("s")) l[1] += 1;
+  if (keys.has("ArrowLeft")) r[0] -= 1; if (keys.has("ArrowRight")) r[0] += 1; if (keys.has("ArrowUp")) r[1] -= 1; if (keys.has("ArrowDown")) r[1] += 1;
+  if (gp) {
+    const [lx, ly] = stick(gp.axes[0] || 0, gp.axes[1] || 0), [rx, ry] = stick(gp.axes[2] || 0, gp.axes[3] || 0);
+    l = [l[0] + lx, l[1] + ly]; r = [r[0] + rx, r[1] + ry];
+  }
+  l = unit(l); r = unit(r);
+  drawStick(sticks[0], l[0], l[1], dt); drawStick(sticks[1], r[0], r[1], dt);
+
   aimX = 0; aimY = 0;
   if (!busy) {
-    let dx = 0, dy = 0;
-    if (keys.has("a") || keys.has("arrowleft")) dx -= 1;
-    if (keys.has("d") || keys.has("arrowright")) dx += 1;
-    if (keys.has("w") || keys.has("arrowup")) dy -= 1;
-    if (keys.has("s") || keys.has("arrowdown")) dy += 1;
-    if (gp) {
-      const [lx, ly] = stick(gp.axes[0] || 0, gp.axes[1] || 0);
-      const [rx, ry] = stick(gp.axes[2] || 0, gp.axes[3] || 0);
-      dx += lx + rx; dy += ly + ry;
-    }
-    const len = Math.hypot(dx, dy);
-    if (len > 1) { dx /= len; dy /= len; } // a diagonal is no faster than a straight line
+    let [dx, dy] = unit([l[0] + r[0], l[1] + r[1]]); // either stick, or both together; a diagonal is no faster
     if ((dx || dy) && (!penDown || points.length < MAX_POINTS)) {
       aimX = dx; aimY = dy;
       const nx = Math.max(0, Math.min(W - 1, x + dx * SPEED * dt)), ny = Math.max(0, Math.min(H - 1, y + dy * SPEED * dt));
@@ -161,6 +325,7 @@ function frame(now) {
   requestAnimationFrame(frame);
 }
 
+// ---------- sending ----------
 async function send() {
   if (busy) return;
   if (!penDown) { statusEl.textContent = START_HINT; return; }
@@ -168,8 +333,11 @@ async function send() {
   busy = true;
   points.push([+(x / W).toFixed(4), +(y / H).toFixed(4)]);
   const started = Date.now();
+  overlay.className = "busy"; overlayText.innerHTML = "DRAWING...<br>0S";
   const tick = setInterval(() => {
-    statusEl.textContent = "Drawing... " + Math.round((Date.now() - started) / 1000) + "s (usually one to three minutes)";
+    const s = Math.round((Date.now() - started) / 1000);
+    overlayText.innerHTML = "DRAWING...<br>" + s + "S";
+    statusEl.textContent = "Colouring in your sketch... (usually one to three minutes)";
   }, 500);
   try {
     const res = await fetch("/api/draw", { method: "POST", headers: { ...headers, "Content-Type": "application/json" }, body: JSON.stringify({ points, scheme: schemeNames[schemeIdx] }) });
@@ -182,11 +350,14 @@ async function send() {
       if (job.status === "done") {
         const png = await (await fetch("/api/jobs/" + body.id + "/art.png", { headers })).blob();
         art.src = URL.createObjectURL(png);
-        statusEl.textContent = "It looks like: " + job.subject + " in the " + job.scheme + " scheme (" + job.seconds + "s, " + job.attempts + " attempt" + (job.attempts > 1 ? "s" : "") + "). Backspace to draw again.";
+        overlay.className = "hidden";
+        statusEl.textContent = "It looks like: " + job.subject + ", in the " + job.scheme + " scheme (" + job.seconds + "s, " + job.attempts + " attempt" + (job.attempts > 1 ? "s" : "") + "). Backspace to draw again.";
         break;
       }
     }
   } catch (err) {
+    overlay.className = art.getAttribute("src") ? "hidden" : "";
+    overlayText.innerHTML = "YOUR PIXEL ART<br>WILL APPEAR HERE";
     statusEl.textContent = "Something went wrong: " + err.message;
   } finally {
     clearInterval(tick);

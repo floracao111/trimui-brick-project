@@ -14,7 +14,7 @@ Read the full plan in [PLAN.md](PLAN.md).
 
 ## What works so far
 
-On my Oracle node, a small server takes pen points, turns them into a sketch, and has Claude colour it in as a 64 by 48 pixel grid, tracing the player's lines. The code checks the grid (size and palette), retries if it is wrong, and renders it as a PNG. A laptop test page lets me draw with the keyboard or a game controller and see the result. The handheld app and getting code onto the Brick Pro are not built yet.
+On my Oracle node, a small server takes pen points, turns them into a sketch, and has Claude colour it in as a 64 by 48 pixel grid, tracing the player's lines. The code checks the grid (size and palette), retries if it is wrong, and renders it as a PNG. A laptop simulator (two big red windows, a stretched pixel-game title, and a controller with two on-screen joysticks that tilt as you press keys) lets me draw with the keyboard or a game controller and see the result. The handheld app and getting code onto the Brick Pro are not built yet.
 
 ```
 scripts/forge.sh test               # copy the code to the node and run the tests there
