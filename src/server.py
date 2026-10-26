@@ -1,6 +1,7 @@
 """Stretch a Sketch server. Runs on the node. Standard library only.
 
-  POST /api/draw                 {"points": [[x, y], ...]}  ->  {"id": "..."}   (x and y are 0 to 1)
+  POST /api/draw                 {"points": [[x, y], ...], "scheme": "random"}  ->  {"id": "..."}   (x and y are 0 to 1)
+  GET  /api/schemes              the color schemes the player can pick from
   GET  /api/jobs/<id>            ->  {"status": "queued|working|done|error", ...}
   GET  /api/jobs/<id>/art.png    the pixel art
   GET  /api/jobs/<id>/sketch.png the sketch the model was shown
@@ -13,6 +14,7 @@ import hmac
 import json
 import os
 import queue
+import random
 import re
 import sys
 import threading
@@ -21,8 +23,8 @@ import uuid
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
-from pixelgrid import render_png
-from sketch import clean_points, points_to_png
+from pixelgrid import SCHEMES, render_png
+from sketch import clean_points, ink_cells, points_to_png
 
 ROOT = Path(__file__).resolve().parent.parent
 MAX_BODY = 300_000
@@ -43,13 +45,18 @@ class Jobs:
         self.pending = queue.Queue(MAX_QUEUE)
         threading.Thread(target=self._worker, daemon=True).start()
 
-    def submit(self, points):
+    def submit(self, points, scheme="random"):
         job_id = uuid.uuid4().hex[:12]
         folder = self.workdir / job_id
         folder.mkdir(parents=True)
         (folder / "sketch.png").write_bytes(points_to_png(points))
+        if scheme not in SCHEMES:
+            scheme = random.choice(list(SCHEMES))
         with self.lock:
-            self.jobs[job_id] = {"id": job_id, "status": "queued", "folder": folder, "made": time.time()}
+            self.jobs[job_id] = {
+                "id": job_id, "status": "queued", "folder": folder, "made": time.time(),
+                "scheme": scheme, "ink": ink_cells(points),
+            }
         try:
             self.pending.put_nowait(job_id)
         except queue.Full:
@@ -70,8 +77,9 @@ class Jobs:
                 job = self.jobs[job_id]
                 job["status"] = "working"
             try:
-                result = self.artist(str(job["folder"] / "sketch.png"))
-                (job["folder"] / "art.png").write_bytes(render_png(result["rows"]))
+                result = self.artist(str(job["folder"] / "sketch.png"), ink=job["ink"], scheme=job["scheme"])
+                palette = SCHEMES[result.get("scheme", job["scheme"])]["colors"]
+                (job["folder"] / "art.png").write_bytes(render_png(result["rows"], palette))
                 update = {"status": "done", "subject": result["subject"], "attempts": result["attempts"]}
             except Exception as err:  # keep the worker alive whatever the model does
                 update = {"status": "error", "error": str(err)[:300]}
@@ -80,7 +88,7 @@ class Jobs:
 
 
 def public(job):
-    return {k: v for k, v in job.items() if k not in ("folder", "made")}
+    return {k: v for k, v in job.items() if k not in ("folder", "made", "ink")}
 
 
 def make_server(host, port, artist, workdir, token=None):
@@ -116,6 +124,8 @@ def make_server(host, port, artist, workdir, token=None):
                 return self.send_json(404, {"error": "not found"})
             if not self.allowed():
                 return self.send_json(401, {"error": "token required"})
+            if path == "/api/schemes":
+                return self.send_json(200, {"schemes": {n: v["description"] for n, v in SCHEMES.items()}})
             parts = path.split("/")  # ['', 'api', 'jobs', id, (file)]
             if len(parts) >= 4 and parts[2] == "jobs" and JOB_ID.match(parts[3]):
                 job = jobs.get(parts[3])
@@ -142,11 +152,15 @@ def make_server(host, port, artist, workdir, token=None):
             if not 0 < length <= MAX_BODY:
                 return self.send_json(413 if length > MAX_BODY else 400, {"error": "bad body size"})
             try:
-                points = clean_points(json.loads(self.rfile.read(length))["points"])
-            except (ValueError, KeyError, TypeError) as err:
+                body = json.loads(self.rfile.read(length))
+                points = clean_points(body["points"])
+                scheme = body.get("scheme", "random")
+                if scheme != "random" and scheme not in SCHEMES:
+                    raise ValueError(f"unknown scheme: choose random or one of {', '.join(SCHEMES)}")
+            except (ValueError, KeyError, TypeError, AttributeError) as err:
                 return self.send_json(400, {"error": f"bad request: {err}"})
             try:
-                job_id = jobs.submit(points)
+                job_id = jobs.submit(points, scheme)
             except Busy:
                 return self.send_json(429, {"error": "busy, try again in a minute"})
             self.send_json(202, {"id": job_id})

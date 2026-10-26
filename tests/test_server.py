@@ -11,7 +11,8 @@ HERE = os.path.dirname(__file__)
 sys.path.insert(0, os.path.join(HERE, "..", "src"))
 
 from server import make_server  # noqa: E402
-from sketch import CANVAS_H, CANVAS_W, clean_points, points_to_png  # noqa: E402
+from sketch import CANVAS_H, CANVAS_W, clean_points, ink_cells, points_to_png  # noqa: E402
+from pixelgrid import GRID_H, GRID_W, SCHEMES  # noqa: E402
 
 with open(os.path.join(HERE, "fixtures", "banana-reply.json")) as f:
     BANANA = json.load(f)
@@ -19,12 +20,16 @@ with open(os.path.join(HERE, "fixtures", "banana-reply.json")) as f:
 LINE = [[0.1 + i * 0.008, 0.5 + (i % 5) * 0.004] for i in range(100)]
 
 
-def fake_artist(path):
+CALLS = []
+
+
+def fake_artist(path, **kwargs):
     assert os.path.exists(path)
-    return {"subject": "fake banana", "rows": BANANA["rows"], "attempts": 1}
+    CALLS.append(kwargs)
+    return {"subject": "fake banana", "rows": BANANA["rows"], "attempts": 1, "scheme": "classic"}
 
 
-def broken_artist(path):
+def broken_artist(path, **kwargs):
     raise RuntimeError("the model fell over")
 
 
@@ -46,6 +51,22 @@ class SketchTests(unittest.TestCase):
     def test_too_many_points(self):
         with self.assertRaises(ValueError):
             clean_points([[0.5, 0.5]] * 5001)
+
+
+class InkTests(unittest.TestCase):
+    def test_a_straight_line_covers_a_row_of_cells(self):
+        cells = ink_cells([(0.0, 0.5), (1.0, 0.5)])
+        self.assertEqual({y for _, y in cells}, {GRID_H // 2})
+        self.assertEqual({x for x, _ in cells}, set(range(GRID_W)))
+
+    def test_points_on_the_edge_stay_inside_the_grid(self):
+        cells = ink_cells([(1.0, 1.0), (0.0, 0.0)])
+        self.assertTrue(all(0 <= x < GRID_W and 0 <= y < GRID_H for x, y in cells))
+
+    def test_a_diagonal_has_no_gaps(self):
+        cells = sorted(ink_cells([(0.0, 0.0), (1.0, 1.0)]))
+        for (x0, y0), (x1, y1) in zip(cells, cells[1:]):
+            self.assertLessEqual(max(abs(x1 - x0), abs(y1 - y0)), 1)
 
 
 class ServerTests(unittest.TestCase):
@@ -85,6 +106,30 @@ class ServerTests(unittest.TestCase):
         self.assertEqual((status, png[:8]), (200, b"\x89PNG\r\n\x1a\n"))
         status, png = self.call("GET", f"/api/jobs/{job['id']}/sketch.png")
         self.assertEqual(status, 200)
+
+    def test_the_artist_is_given_the_sketch_cells_and_a_scheme(self):
+        self.start()
+        CALLS.clear()
+        _, raw = self.call("POST", "/api/draw", {"points": LINE, "scheme": "gothic"})
+        job = self.wait_for(json.loads(raw)["id"])
+        self.assertEqual(job["scheme"], "gothic")
+        self.assertEqual(CALLS[-1]["scheme"], "gothic")
+        self.assertEqual(CALLS[-1]["ink"], ink_cells(clean_points(LINE)))
+
+    def test_random_scheme_becomes_a_real_scheme(self):
+        self.start()
+        _, raw = self.call("POST", "/api/draw", {"points": LINE})
+        self.assertIn(self.wait_for(json.loads(raw)["id"])["scheme"], SCHEMES)
+
+    def test_unknown_scheme_is_a_400(self):
+        self.start()
+        self.assertEqual(self.call("POST", "/api/draw", {"points": LINE, "scheme": "rainbow"})[0], 400)
+
+    def test_schemes_are_listed(self):
+        self.start()
+        status, raw = self.call("GET", "/api/schemes")
+        self.assertEqual(status, 200)
+        self.assertEqual(set(json.loads(raw)["schemes"]), set(SCHEMES))
 
     def test_bad_points_are_a_400(self):
         self.start()

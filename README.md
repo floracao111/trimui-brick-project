@@ -14,7 +14,7 @@ Read the full plan in [PLAN.md](PLAN.md).
 
 ## What works so far
 
-On my Oracle node, a small server takes pen points, turns them into a sketch, and has Claude redraw it as a 64 by 48 pixel grid. The code checks the grid (size and palette), retries if it is wrong, and renders it as a PNG. A laptop test page lets me draw with the keyboard or a game controller and see the result. The handheld app and getting code onto the Brick Pro are not built yet.
+On my Oracle node, a small server takes pen points, turns them into a sketch, and has Claude colour it in as a 64 by 48 pixel grid, tracing the player's lines. The code checks the grid (size and palette), retries if it is wrong, and renders it as a PNG. A laptop test page lets me draw with the keyboard or a game controller and see the result. The handheld app and getting code onto the Brick Pro are not built yet.
 
 ```
 scripts/forge.sh test               # copy the code to the node and run the tests there
@@ -24,21 +24,11 @@ scripts/forge.sh serve              # run the server on the node, then open http
 
 ### Real results so far
 
-Top row: the sketches. Bottom row: what Claude on my node drew from each one, with its own choice of colors and background. The banana sketch was drawn for the plan; the other three are test sketches made by a script to look like joystick lines. The star, house and fish took 72 to 106 seconds at low effort; the banana was an earlier run that took about three minutes.
+Top row: the sketches. Bottom row: what Claude on my node made from each one, colouring in the lines exactly where they were drawn, in a different color scheme each time (named under each picture). The sketches are test drawings made by a script to look like joystick lines. Each took between 58 and 96 seconds at low effort.
 
 <table>
-<tr>
-<td><img src="images/results/banana-sketch.png" width="200" alt="Banana sketch"></td>
-<td><img src="images/results/star-sketch.png" width="200" alt="Star sketch"></td>
-<td><img src="images/results/house-sketch.png" width="200" alt="House sketch"></td>
-<td><img src="images/results/fish-sketch.png" width="200" alt="Fish sketch"></td>
-</tr>
-<tr>
-<td><img src="images/results/banana-art.png" width="200" alt="Pixel art banana on a blue background"></td>
-<td><img src="images/results/star-art.png" width="200" alt="Pixel art star with a face on a navy sky"></td>
-<td><img src="images/results/house-art.png" width="200" alt="Pixel art house with a garden"></td>
-<td><img src="images/results/fish-art.png" width="200" alt="Pixel art fish in the sea"></td>
-</tr>
+<tr><td align="center"><img src="images/results/flower-sketch.png" width="180" alt="flower sketch"></td><td align="center"><img src="images/results/flower-sketch.png" width="180" alt="flower sketch"></td><td align="center"><img src="images/results/house-sketch.png" width="180" alt="house sketch"></td><td align="center"><img src="images/results/fish-sketch.png" width="180" alt="fish sketch"></td><td align="center"><img src="images/results/star-sketch.png" width="180" alt="star sketch"></td></tr>
+<tr><td align="center"><img src="images/results/flower-gothic-art.png" width="180" alt="flower as pixel art in the gothic scheme"><br><sub>gothic</sub></td><td align="center"><img src="images/results/flower-pastel-art.png" width="180" alt="flower as pixel art in the pastel scheme"><br><sub>pastel</sub></td><td align="center"><img src="images/results/house-synthwave-art.png" width="180" alt="house as pixel art in the synthwave scheme"><br><sub>synthwave</sub></td><td align="center"><img src="images/results/fish-mono-art.png" width="180" alt="fish as pixel art in the mono scheme"><br><sub>mono</sub></td><td align="center"><img src="images/results/star-gameboy-art.png" width="180" alt="star as pixel art in the gameboy scheme"><br><sub>gameboy</sub></td></tr>
 </table>
 
 The code is in `src/`, the tests in `tests/`, and `CLAUDE.md` is the briefing the AI reads first.

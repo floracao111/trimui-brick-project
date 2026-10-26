@@ -1,7 +1,7 @@
 """Turn a list of pen points into a sketch PNG. Standard library only."""
 import math
 
-from pixelgrid import png_from_raw
+from pixelgrid import GRID_H, GRID_W, png_from_raw
 
 CANVAS_W, CANVAS_H = 640, 480  # 4:3, the same shape as the handheld's screen and the pixel grid
 MAX_POINTS = 5000
@@ -56,3 +56,19 @@ def points_to_png(points, width=CANVAS_W, height=CANVAS_H, radius=1.6):
     for row in range(height):
         raw += b"\x00" + buf[row * stride:(row + 1) * stride]
     return png_from_raw(width, height, raw)
+
+
+def ink_cells(points, width=GRID_W, height=GRID_H):
+    """The grid cells the pen's path passes through. Points are 0 to 1 pairs from clean_points()."""
+    cells = set()
+
+    def add(x, y):
+        cells.add((min(int(x * width), width - 1), min(int(y * height), height - 1)))
+
+    add(*points[0])
+    for (x0, y0), (x1, y1) in zip(points, points[1:]):
+        steps = max(1, int(max(abs(x1 - x0) * width, abs(y1 - y0) * height) * 3))
+        for i in range(1, steps + 1):
+            t = i / steps
+            add(x0 + (x1 - x0) * t, y0 + (y1 - y0) * t)
+    return cells

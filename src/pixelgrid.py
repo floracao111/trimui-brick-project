@@ -29,6 +29,121 @@ PALETTE = {
 }
 
 
+def _colors(*rows):
+    return {code: (name, color) for code, name, color in rows}
+
+
+# Each scheme is a mood. The server picks one per drawing (or the player chooses), and the model
+# must use only that scheme's codes. "classic" is the original bright palette.
+SCHEMES = {
+    "classic": {"description": "bright, saturated arcade colors", "colors": PALETTE},
+    "gothic": {
+        "description": "blacks, charcoal and dark reds with bone white; dark and moody",
+        "colors": _colors(
+            ("a", "near-black", "#07060a"), ("b", "charcoal", "#1b1a22"), ("c", "dark slate", "#33313d"),
+            ("d", "ash gray", "#5c5a68"), ("e", "bone", "#d8d2c4"), ("f", "dried blood", "#3d0b12"),
+            ("g", "dark red", "#6e1019"), ("h", "crimson", "#a8132a"), ("i", "deep purple", "#2a1033"),
+            ("j", "faded purple", "#5b2a63"),
+        ),
+    },
+    "mono": {
+        "description": "pure black and white with shades of gray, like an old monochrome game",
+        "colors": _colors(
+            ("a", "black", "#000000"), ("b", "gray 1", "#1c1c1c"), ("c", "gray 2", "#383838"),
+            ("d", "gray 3", "#555555"), ("e", "gray 4", "#717171"), ("f", "gray 5", "#8d8d8d"),
+            ("g", "gray 6", "#aaaaaa"), ("h", "gray 7", "#c6c6c6"), ("i", "gray 8", "#e2e2e2"),
+            ("j", "white", "#ffffff"),
+        ),
+    },
+    "pastel": {
+        "description": "soft, light pastel colors with a gentle plum outline",
+        "colors": _colors(
+            ("a", "plum", "#6b5876"), ("b", "rose", "#ffb3c6"), ("c", "peach", "#ffcfb0"),
+            ("d", "butter", "#fff3b0"), ("e", "mint", "#b8f0d0"), ("f", "sky", "#b5dcff"),
+            ("g", "lavender", "#d4c1ff"), ("h", "cream", "#fff8ee"), ("i", "blush", "#ffd6e4"),
+            ("j", "sage", "#c9e4b8"), ("k", "lilac gray", "#b9b0c9"),
+        ),
+    },
+    "gameboy": {
+        "description": "only four shades of green, like the original Game Boy",
+        "colors": _colors(
+            ("a", "darkest green", "#0f380f"), ("b", "dark green", "#306230"),
+            ("c", "light green", "#8bac0f"), ("d", "lightest green", "#9bbc0f"),
+        ),
+    },
+    "synthwave": {
+        "description": "neon purples, magentas, orange and cyan, like an 80s night drive",
+        "colors": _colors(
+            ("a", "ink purple", "#12042b"), ("b", "deep violet", "#2b0a5c"), ("c", "indigo", "#3d1a8a"),
+            ("d", "magenta", "#ff2fa0"), ("e", "hot pink", "#ff77c8"), ("f", "orange", "#ff9a3c"),
+            ("g", "sun yellow", "#ffe14d"), ("h", "cyan", "#2ff3ff"), ("i", "teal", "#0f9cb8"),
+            ("j", "white", "#ffffff"), ("k", "midnight", "#1a1040"),
+        ),
+    },
+    "sepia": {
+        "description": "browns, tans and parchment, like an old faded photograph",
+        "colors": _colors(
+            ("a", "dark umber", "#2b1a0e"), ("b", "brown", "#5a3a1e"), ("c", "leather", "#8a5a2b"),
+            ("d", "tan", "#b98a52"), ("e", "sand", "#dcc08a"), ("f", "parchment", "#f0e2bf"),
+            ("g", "faded ink", "#4a3a2c"), ("h", "rust", "#9b4a22"),
+        ),
+    },
+    "toxic": {
+        "description": "black with acid green, neon purple and warning orange",
+        "colors": _colors(
+            ("a", "black", "#050505"), ("b", "charcoal", "#1a1a1a"), ("c", "acid green", "#b6ff00"),
+            ("d", "dark green", "#3d7d00"), ("e", "neon purple", "#a21cff"), ("f", "deep purple", "#3a0a66"),
+            ("g", "warning orange", "#ff6a00"), ("h", "bone", "#ecf5e0"),
+        ),
+    },
+}
+
+
+def _dilate(cells, radius, width=GRID_W, height=GRID_H):
+    out = set()
+    for x, y in cells:
+        for dy in range(-radius, radius + 1):
+            for dx in range(-radius, radius + 1):
+                if 0 <= x + dx < width and 0 <= y + dy < height:
+                    out.add((x + dx, y + dy))
+    return out
+
+
+def fit_to_sketch(rows, ink, outline, min_coverage=0.6):
+    """Check the art follows the player's lines. ink is the set of (x, y) cells the line passes through.
+
+    Returns (rows, problems). Small gaps along the line are filled in with the outline code.
+    A big miss, or outlined parts the sketch does not have (a stem it never drew), is a problem.
+    """
+    if not ink:
+        return rows, []
+    width, height = len(rows[0]), len(rows)
+    outline_cells = {(x, y) for y, row in enumerate(rows) for x, code in enumerate(row) if code == outline}
+    missing = [c for c in ink if c not in _dilate(outline_cells, 1, width, height)]
+    coverage = 1 - len(missing) / len(ink)
+    problems = []
+    if coverage < min_coverage:
+        problems.append(
+            f"only {coverage:.0%} of the sketch's # cells carry the outline code '{outline}'. "
+            "Keep every # cell in place, same position and size, and put the outline code on it"
+        )
+    near_sketch = _dilate(ink, 2, width, height)
+    extras = [c for c in outline_cells if c not in near_sketch]
+    if len(extras) > max(8, int(0.06 * len(ink))):
+        xs, ys = [c[0] for c in extras], [c[1] for c in extras]
+        problems.append(
+            f"{len(extras)} outline cells are away from the sketch's lines (columns {min(xs)}-{max(xs)}, "
+            f"rows {min(ys)}-{max(ys)}). Do not add outlined parts the sketch does not have, and draw "
+            "background details without the outline code"
+        )
+    if problems:
+        return rows, problems
+    grid = [list(row) for row in rows]
+    for x, y in missing:
+        grid[y][x] = outline
+    return ["".join(row) for row in grid], []
+
+
 def parse_reply(text):
     """Pull the JSON object out of a reply, even if it has code fences or extra words."""
     match = re.search(r"\{.*\}", text.strip(), re.S)

@@ -17,7 +17,8 @@
   small { color: #888; }
   img:not([src]) { display: none; }
   img { background: #000; image-rendering: pixelated; border: 4px solid #333; }
-  #status { margin-top: 10px; min-height: 1.4em; }
+  #scheme { margin-top: 10px; color: #9be; }
+  #status { margin-top: 6px; min-height: 1.4em; }
   kbd { background: #333; border-radius: 4px; padding: 1px 6px; }
 </style>
 </head>
@@ -28,15 +29,16 @@
   First, move to where you want to start and press <kbd>Space</kbd> (or button X) to put the pen down.
   After that it is one continuous line, like the toy, and you can't lift it.
   Send: <kbd>Enter</kbd> (or button A). Clear and pick a new start: <kbd>Backspace</kbd> (or button B).
+  Color scheme: <kbd>C</kbd> (or button Y) cycles through them.
 </p>
 <small id="ver"></small>
 <div class="row">
   <div><div class="frame"><div class="stack"><canvas id="pad" width="640" height="480"></canvas><canvas id="cursor" width="640" height="480"></canvas></div></div></div>
-  <div><img id="art" alt="The pixel art will appear here"><div id="status"></div></div>
+  <div><img id="art" alt="The pixel art will appear here"><div id="scheme"></div><div id="status"></div></div>
 </div>
 <script>
 const W = 640, H = 480, SPEED = 90, MIN_STEP = 2, MAX_POINTS = 4500; // SPEED is pixels per second
-document.getElementById("ver").textContent = "version 4: pen speed " + SPEED + " px/s";
+document.getElementById("ver").textContent = "version 5: pen speed " + SPEED + " px/s";
 const pad = document.getElementById("pad"), ctx = pad.getContext("2d");
 const cur = document.getElementById("cursor").getContext("2d");
 const art = document.getElementById("art"), statusEl = document.getElementById("status");
@@ -46,12 +48,22 @@ let x = W / 2, y = H / 2, points = [], penDown = false, busy = false, wasA = fal
 const START_HINT = "Move to where you want to start, then press Space (or X) to put the pen down.";
 statusEl.textContent = START_HINT;
 const keys = new Set();
+let schemeNames = ["random"], schemeInfo = {}, schemeIdx = 0, wasY = false;
+const schemeEl = document.getElementById("scheme");
+function showScheme() {
+  const name = schemeNames[schemeIdx];
+  schemeEl.textContent = "Color scheme: " + name + (schemeInfo[name] ? " (" + schemeInfo[name] + ")" : " (a surprise each time)");
+}
+function nextScheme() { if (!busy) { schemeIdx = (schemeIdx + 1) % schemeNames.length; showScheme(); } }
+fetch("/api/schemes", { headers }).then(r => r.json()).then(d => { schemeInfo = d.schemes; schemeNames = ["random", ...Object.keys(d.schemes)]; showScheme(); }).catch(() => showScheme());
+showScheme();
 
 addEventListener("keydown", e => {
   keys.add(e.key.toLowerCase());
   if (e.key === "Enter") send();
   if (e.key === "Backspace") clearPad();
   if (e.key === " ") putPenDown();
+  if (e.key.toLowerCase() === "c") nextScheme();
   if (e.key.startsWith("Arrow") || e.key === " ") e.preventDefault();
 });
 addEventListener("keyup", e => keys.delete(e.key.toLowerCase()));
@@ -110,11 +122,12 @@ function frame(now) {
   const pads = navigator.getGamepads ? [...navigator.getGamepads()].filter(Boolean) : [];
   const gp = pads[0];
   if (gp) {
-    const a = gp.buttons[0] && gp.buttons[0].pressed, b = gp.buttons[1] && gp.buttons[1].pressed, bx = gp.buttons[2] && gp.buttons[2].pressed;
+    const a = gp.buttons[0] && gp.buttons[0].pressed, b = gp.buttons[1] && gp.buttons[1].pressed, bx = gp.buttons[2] && gp.buttons[2].pressed, by = gp.buttons[3] && gp.buttons[3].pressed;
     if (a && !wasA) send();
     if (b && !wasB) clearPad();
     if (bx && !wasX) putPenDown();
-    wasA = a; wasB = b; wasX = bx;
+    if (by && !wasY) nextScheme();
+    wasA = a; wasB = b; wasX = bx; wasY = by;
   }
   aimX = 0; aimY = 0;
   if (!busy) {
@@ -159,7 +172,7 @@ async function send() {
     statusEl.textContent = "Drawing... " + Math.round((Date.now() - started) / 1000) + "s (usually one to three minutes)";
   }, 500);
   try {
-    const res = await fetch("/api/draw", { method: "POST", headers: { ...headers, "Content-Type": "application/json" }, body: JSON.stringify({ points }) });
+    const res = await fetch("/api/draw", { method: "POST", headers: { ...headers, "Content-Type": "application/json" }, body: JSON.stringify({ points, scheme: schemeNames[schemeIdx] }) });
     const body = await res.json();
     if (!res.ok) throw new Error(body.error || res.status);
     for (;;) {
@@ -169,7 +182,7 @@ async function send() {
       if (job.status === "done") {
         const png = await (await fetch("/api/jobs/" + body.id + "/art.png", { headers })).blob();
         art.src = URL.createObjectURL(png);
-        statusEl.textContent = "It looks like: " + job.subject + " (" + job.seconds + "s, " + job.attempts + " attempt" + (job.attempts > 1 ? "s" : "") + "). Backspace to draw again.";
+        statusEl.textContent = "It looks like: " + job.subject + " in the " + job.scheme + " scheme (" + job.seconds + "s, " + job.attempts + " attempt" + (job.attempts > 1 ? "s" : "") + "). Backspace to draw again.";
         break;
       }
     }

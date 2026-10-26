@@ -32,6 +32,7 @@ Never edit files on the node by hand. If a file there is wrong, fix it here and 
 - `ANTHROPIC_API_KEY` must stay unset on the node. The node uses the student's Claude account, not
   an API key.
 - Never put logins, tokens, keys, or anything from `~/.claude` into this repo.
+- The art must trace the player's sketch (see `fit_to_sketch` in `src/pixelgrid.py`) and add no parts the sketch lacks. Colour schemes live in `SCHEMES`; each scheme has its own codes.
 - Pixel grids are 64 columns by 48 rows, one character per pixel, using only the codes in
   `src/pixelgrid.py`. The model chooses the background and colors from that palette. Change the palette there, not in prompts.
 - Keep `PLAN.md` and `README.md` honest: mark what is planned and what is tested.

@@ -8,6 +8,8 @@ PSAM 5600 B, Fall 2026. Device: TrimUI Brick Pro. Co-author: Claude Sonnet 5.5 (
 
 An Etch A Sketch for a retro Linux handheld. Draw with the two joysticks, and the app turns every sketch into 90s video-game pixel art. The buttons let you customize the look.
 
+The art stays true to what you drew: Claude colours in and shades your lines where you put them. It does not redraw your subject or add parts you did not draw. It may add a background.
+
 The Brick Pro is a game handheld with no drawing tool and no AI. This project makes it do something it was never meant to do, using the two sticks the way an Etch A Sketch uses its two knobs. The output is the kind of art the handheld's own games are made of.
 
 Like the toy, you draw one continuous line and can't lift the pen. Before the pen goes down you can move it anywhere to choose where the line starts, and either stick can move the pen in any direction, so diagonals are easy. The AI has to make sense of that single wiggly line, and that limit is part of the fun.
@@ -33,7 +35,7 @@ These are illustrations of the idea, not output from this project. The scribble 
 
 The app always makes 90s-style pixel art, and the buttons change how it looks:
 
-- **Palette.** The model already picks colors and a background to suit each sketch. The buttons will steer it, for example a green handheld look or bright arcade colors.
+- **Color scheme.** Eight moods to rotate through or pick with a key: bright classic, dark gothic, grayscale, pastel, Game Boy green, synthwave, sepia and toxic neon. Left on random, each drawing gets a surprise.
 - **Pixel size.** Chunky 32 by 24 or fine 64 by 48.
 - **Outline and shading.** Turn the dark outline and the shading tones on or off.
 - **Subject.** A single sprite, an item, or a small scene.
@@ -50,9 +52,9 @@ The app always makes 90s-style pixel art, and the buttons change how it looks:
 ```
 
 1. **Handheld app.** A small native app. Left stick moves the pen horizontally, right stick vertically. Buttons change the options, send the sketch, and clear the screen.
-2. **Node server.** Runs on my Oracle cloud node. It receives the sketch and asks Claude Code, running on the node and signed in with my Claude Pro account, to look at it and reply with a pixel grid in the palette, choosing its own colors and background for each sketch.
+2. **Node server.** Runs on my Oracle cloud node. It receives the sketch and asks Claude Code, running on the node and signed in with my Claude Pro account, to look at it and reply with a pixel grid in the chosen color scheme. It is shown the sketch as a map of grid cells and told to trace it.
 3. **Claude (Sonnet 5.5).** Looks at the sketch and draws it as a 64 by 48 grid of palette codes, like a sprite. A language model writes pixel art well because pixel art is just a small grid.
-4. **Render.** The node checks the grid, fixes small counting slips (a row off by one pixel), retries if it is badly wrong, enforces the palette, and renders it as a crisp image with the same look every time, then sends it back to the handheld.
+4. **Render.** The node checks that the picture still follows the player's lines and added nothing (retrying if not), fixes small counting slips (a row off by one pixel), retries if it is badly wrong, enforces the palette, and renders it as a crisp image with the same look every time, then sends it back to the handheld.
 5. **Own language model (later).** Once the node hosts its own small model in Week 11, it can handle side jobs such as naming each picture.
 
 The node side of this is built and tested with four sketches (banana, star, house, fish): each came back valid with its own colors and background (the star, house and fish in 72 to 106 seconds at low effort; the banana took about three minutes at default effort). The server, the handheld app and the device deploy are not built yet, and I still need to try more sketches. If my Pro plan's limits or terms get in the way, the node can use a pay-as-you-go API key instead without changing the rest of the design.
