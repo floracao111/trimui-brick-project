@@ -24,42 +24,60 @@
 <body>
 <h1>Stretch a Sketch</h1>
 <p>
-  Left knob: <kbd>A</kbd> <kbd>D</kbd> (or left stick). Right knob: <kbd>&uarr;</kbd> <kbd>&darr;</kbd> (or right stick).
-  Send: <kbd>Enter</kbd> (or button A). Clear: <kbd>Backspace</kbd> (or button B).
-  One continuous line, like the toy.
+  Move: <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> or the arrow keys (press two for a diagonal), or either stick in any direction.
+  First, move to where you want to start and press <kbd>Space</kbd> (or button X) to put the pen down.
+  After that it is one continuous line, like the toy, and you can't lift it.
+  Send: <kbd>Enter</kbd> (or button A). Clear and pick a new start: <kbd>Backspace</kbd> (or button B).
 </p>
 <small id="ver"></small>
 <div class="row">
   <div><div class="frame"><div class="stack"><canvas id="pad" width="640" height="480"></canvas><canvas id="cursor" width="640" height="480"></canvas></div></div></div>
-  <div><img id="art" alt="The pixel art will appear here"><div id="status">Draw something, then press Enter.</div></div>
+  <div><img id="art" alt="The pixel art will appear here"><div id="status"></div></div>
 </div>
 <script>
 const W = 640, H = 480, SPEED = 90, MIN_STEP = 2, MAX_POINTS = 4500; // SPEED is pixels per second
-document.getElementById("ver").textContent = "version 3: pen speed " + SPEED + " px/s";
+document.getElementById("ver").textContent = "version 4: pen speed " + SPEED + " px/s";
 const pad = document.getElementById("pad"), ctx = pad.getContext("2d");
 const cur = document.getElementById("cursor").getContext("2d");
 const art = document.getElementById("art"), statusEl = document.getElementById("status");
 const token = new URLSearchParams(location.hash.slice(1)).get("token");
 const headers = token ? { "X-Token": token } : {};
-let x = W / 2, y = H / 2, points = [[x / W, y / H]], busy = false, wasA = false, wasB = false;
+let x = W / 2, y = H / 2, points = [], penDown = false, busy = false, wasA = false, wasB = false, wasX = false;
+const START_HINT = "Move to where you want to start, then press Space (or X) to put the pen down.";
+statusEl.textContent = START_HINT;
 const keys = new Set();
 
 addEventListener("keydown", e => {
   keys.add(e.key.toLowerCase());
   if (e.key === "Enter") send();
   if (e.key === "Backspace") clearPad();
-  if (e.key.startsWith("Arrow")) e.preventDefault();
+  if (e.key === " ") putPenDown();
+  if (e.key.startsWith("Arrow") || e.key === " ") e.preventDefault();
 });
 addEventListener("keyup", e => keys.delete(e.key.toLowerCase()));
+
+function putPenDown() {
+  if (busy || penDown) return;
+  penDown = true;
+  points = [[+(x / W).toFixed(4), +(y / H).toFixed(4)]];
+  statusEl.textContent = "Pen is down. Draw one continuous line, then press Enter.";
+}
 
 function clearPad() {
   if (busy) return;
   ctx.clearRect(0, 0, W, H);
-  points = [[x / W, y / H]];
-  statusEl.textContent = "Cleared. Draw something, then press Enter.";
+  penDown = false;
+  points = [];
+  statusEl.textContent = "Cleared. " + START_HINT;
 }
 
-function dead(v) { return Math.abs(v) > 0.15 ? v : 0; }
+// A stick's push (-1 to 1 on each axis) with a round dead zone, so small drift is ignored and any angle works.
+function stick(ax, ay) {
+  const m = Math.hypot(ax, ay);
+  if (m < 0.15) return [0, 0];
+  const k = Math.min(1, (m - 0.15) / 0.85) / m;
+  return [ax * k, ay * k];
+}
 
 let lastTime = 0, aimX = 0, aimY = 0;
 
@@ -67,7 +85,8 @@ function drawCursor() {
   cur.clearRect(0, 0, W, H);
   const pulse = 1 + 0.15 * Math.sin(performance.now() / 150);
   cur.lineCap = "round";
-  for (const [color, width] of [["#ffffff", 6], ["#ff2e63", 3]]) {
+  const ink = penDown ? "#ff2e63" : "#1f8fff"; // pink-red when drawing, blue while choosing a start point
+  for (const [color, width] of [["#ffffff", 6], [ink, 3]]) {
     cur.strokeStyle = color; cur.lineWidth = width;
     cur.beginPath(); cur.arc(x, y, 9 * pulse, 0, Math.PI * 2); cur.stroke();
     cur.beginPath();
@@ -91,28 +110,38 @@ function frame(now) {
   const pads = navigator.getGamepads ? [...navigator.getGamepads()].filter(Boolean) : [];
   const gp = pads[0];
   if (gp) {
-    const a = gp.buttons[0] && gp.buttons[0].pressed, b = gp.buttons[1] && gp.buttons[1].pressed;
+    const a = gp.buttons[0] && gp.buttons[0].pressed, b = gp.buttons[1] && gp.buttons[1].pressed, bx = gp.buttons[2] && gp.buttons[2].pressed;
     if (a && !wasA) send();
     if (b && !wasB) clearPad();
-    wasA = a; wasB = b;
+    if (bx && !wasX) putPenDown();
+    wasA = a; wasB = b; wasX = bx;
   }
   aimX = 0; aimY = 0;
   if (!busy) {
     let dx = 0, dy = 0;
-    if (keys.has("a")) dx -= 1;
-    if (keys.has("d")) dx += 1;
-    if (keys.has("arrowup")) dy -= 1;
-    if (keys.has("arrowdown")) dy += 1;
-    if (gp) { dx += dead(gp.axes[0] || 0); dy += dead(gp.axes[3] || 0); }
-    dx = Math.max(-1, Math.min(1, dx)); dy = Math.max(-1, Math.min(1, dy));
-    if ((dx || dy) && points.length < MAX_POINTS) {
+    if (keys.has("a") || keys.has("arrowleft")) dx -= 1;
+    if (keys.has("d") || keys.has("arrowright")) dx += 1;
+    if (keys.has("w") || keys.has("arrowup")) dy -= 1;
+    if (keys.has("s") || keys.has("arrowdown")) dy += 1;
+    if (gp) {
+      const [lx, ly] = stick(gp.axes[0] || 0, gp.axes[1] || 0);
+      const [rx, ry] = stick(gp.axes[2] || 0, gp.axes[3] || 0);
+      dx += lx + rx; dy += ly + ry;
+    }
+    const len = Math.hypot(dx, dy);
+    if (len > 1) { dx /= len; dy /= len; } // a diagonal is no faster than a straight line
+    if ((dx || dy) && (!penDown || points.length < MAX_POINTS)) {
       aimX = dx; aimY = dy;
       const nx = Math.max(0, Math.min(W - 1, x + dx * SPEED * dt)), ny = Math.max(0, Math.min(H - 1, y + dy * SPEED * dt));
-      ctx.strokeStyle = "#2b2b2b"; ctx.lineWidth = 3; ctx.lineCap = "round";
-      ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(nx, ny); ctx.stroke();
+      if (penDown) {
+        ctx.strokeStyle = "#2b2b2b"; ctx.lineWidth = 3; ctx.lineCap = "round";
+        ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(nx, ny); ctx.stroke();
+      }
       x = nx; y = ny;
-      const last = points[points.length - 1];
-      if (Math.hypot(x - last[0] * W, y - last[1] * H) >= MIN_STEP) points.push([+(x / W).toFixed(4), +(y / H).toFixed(4)]);
+      if (penDown) {
+        const last = points[points.length - 1];
+        if (Math.hypot(x - last[0] * W, y - last[1] * H) >= MIN_STEP) points.push([+(x / W).toFixed(4), +(y / H).toFixed(4)]);
+      }
     }
   }
   drawCursor();
@@ -121,6 +150,7 @@ function frame(now) {
 
 async function send() {
   if (busy) return;
+  if (!penDown) { statusEl.textContent = START_HINT; return; }
   if (points.length < 20) { statusEl.textContent = "Draw a bit more first."; return; }
   busy = true;
   points.push([+(x / W).toFixed(4), +(y / H).toFixed(4)]);

@@ -10,7 +10,7 @@ An Etch A Sketch for a retro Linux handheld. Draw with the two joysticks, and th
 
 The Brick Pro is a game handheld with no drawing tool and no AI. This project makes it do something it was never meant to do, using the two sticks the way an Etch A Sketch uses its two knobs. The output is the kind of art the handheld's own games are made of.
 
-Like the toy, you draw one continuous line and can't lift the pen. The AI has to make sense of that single wiggly line, and that limit is part of the fun.
+Like the toy, you draw one continuous line and can't lift the pen. Before the pen goes down you can move it anywhere to choose where the line starts, and either stick can move the pen in any direction, so diagonals are easy. The AI has to make sense of that single wiggly line, and that limit is part of the fun.
 
 ### What it looks like
 
