@@ -11,87 +11,84 @@
   :root {
     --pixel: "Press Start 2P", "Courier New", monospace;
     --red-1: #e2413f; --red-2: #b21f2a; --red-3: #7e1220;
+    --lilac: #cbbfff; --sky: #a9d6ff;
+    --sw: 40vw;            /* screen width, set by fit() so everything fits the window */
   }
   * { box-sizing: border-box; }
   html, body { height: 100%; }
   body {
-    margin: 0; padding: 18px 28px 14px; color: #efe9ff; font-family: system-ui, sans-serif;
+    margin: 0; padding: 14px 24px; color: #f1f1f6; font-family: system-ui, sans-serif;
+    display: flex; flex-direction: column; overflow: hidden;
     background:
-      linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px) 0 0 / 100% 6px,
-      radial-gradient(1200px 700px at 20% 0%, #3a1d78 0%, transparent 60%),
-      radial-gradient(1000px 700px at 100% 100%, #5a1458 0%, transparent 55%),
-      #120b2e;
-    min-height: 100vh; display: flex; flex-direction: column;
+      linear-gradient(rgba(255,255,255,.03) 1px, transparent 1px) 0 0 / 100% 6px,
+      radial-gradient(900px 600px at 0% 0%, rgba(203,191,255,.16), transparent 60%),
+      radial-gradient(900px 600px at 100% 100%, rgba(169,214,255,.14), transparent 60%),
+      linear-gradient(135deg, #050507 0%, #17171c 45%, #3a3a43 100%);
   }
+  @media (max-width: 900px) { body { overflow: auto; } }
 
-  header { margin-bottom: 14px; }
+  header { margin-bottom: 10px; flex: none; }
   h1 {
     margin: 0; display: inline-block; font-family: var(--pixel); font-weight: 400; text-transform: uppercase;
-    font-size: clamp(16px, 2.5vw, 40px); letter-spacing: .05em; line-height: 1.1;
+    font-size: clamp(16px, 2.3vw, 38px); letter-spacing: .05em; line-height: 1.1;
     transform: scaleX(1.75); transform-origin: left center;
-    background: linear-gradient(#fff9a8 0%, #ffd23a 35%, #ff7a2e 62%, #ff2e8a 100%);
+    background: linear-gradient(#ffffff 0%, #e4e4ee 45%, #b9c8ff 100%);
     -webkit-background-clip: text; background-clip: text; color: transparent;
-    filter: drop-shadow(3px 3px 0 #2a0a55) drop-shadow(6px 6px 0 rgba(0,0,0,.35));
+    filter: drop-shadow(3px 3px 0 #000) drop-shadow(6px 6px 0 rgba(203,191,255,.18));
   }
-  .tag { margin: 10px 0 0; font-family: var(--pixel); font-size: clamp(7px, .8vw, 11px); color: #b9a8ff; letter-spacing: .08em; }
-  #ver { margin-left: 10px; color: #6e6199; font-family: system-ui, sans-serif; letter-spacing: 0; font-size: 11px; }
+  .tag { margin: 8px 0 0; font-family: var(--pixel); font-size: clamp(7px, .75vw, 10px); color: #a6a6b8; letter-spacing: .08em; }
+  #ver { margin-left: 10px; color: #6a6a78; font-family: system-ui, sans-serif; letter-spacing: 0; font-size: 11px; }
 
-  .grid { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 28px; align-items: start; }
-  @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } h1 { transform: scaleX(1.3); } }
+  main { flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 24px; justify-items: center; align-content: start; }
+  @media (max-width: 900px) { main { grid-template-columns: 1fr; } h1 { transform: scaleX(1.3); } }
+  .col { width: calc(var(--sw) + 36px); max-width: 100%; }
 
   .frame {
     background: linear-gradient(160deg, var(--red-1), var(--red-2) 55%, var(--red-3));
-    padding: 18px 18px 14px; border-radius: 20px;
-    box-shadow: inset 0 3px 0 rgba(255,255,255,.28), inset 0 -5px 0 rgba(0,0,0,.28), 0 14px 30px rgba(0,0,0,.45);
+    padding: 18px 18px 12px; border-radius: 20px;
+    box-shadow: inset 0 3px 0 rgba(255,255,255,.28), inset 0 -5px 0 rgba(0,0,0,.28), 0 14px 30px rgba(0,0,0,.55);
   }
   .screen {
-    position: relative; width: 100%; aspect-ratio: 4 / 3; border-radius: 8px; overflow: hidden;
+    position: relative; width: var(--sw); max-width: 100%; aspect-ratio: 4 / 3; border-radius: 8px; overflow: hidden;
     box-shadow: inset 0 0 0 4px rgba(0,0,0,.35), inset 0 6px 14px rgba(0,0,0,.35);
   }
   .screen.pad { background: #cfd2ca; }
-  .screen.display { background: #05030c; }
+  .screen.display { background: #050507; }
   .screen canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
   .screen img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; image-rendering: pixelated; }
   .screen img:not([src]) { display: none; }
-  .plate { margin-top: 12px; text-align: center; font-family: var(--pixel); font-size: clamp(8px, .9vw, 12px); color: #ffd98a; letter-spacing: .25em; text-shadow: 0 2px 0 rgba(0,0,0,.4); }
+  .plate { margin-top: 10px; text-align: center; font-family: var(--pixel); font-size: clamp(7px, .8vw, 11px); color: #f0e9ff; letter-spacing: .25em; text-shadow: 0 2px 0 rgba(0,0,0,.45); }
 
   #overlay {
     position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px;
-    font-family: var(--pixel); font-size: clamp(8px, 1vw, 13px); color: #8f83bd; text-align: center; line-height: 1.8; padding: 20px;
+    font-family: var(--pixel); font-size: clamp(8px, 1vw, 13px); color: #8b8b9c; text-align: center; line-height: 1.8; padding: 20px;
   }
-  #overlay.busy { background: rgba(5, 3, 12, .72); color: #ffe27a; }
+  #overlay.busy { background: rgba(5, 5, 7, .74); color: var(--sky); }
   #overlay.hidden { display: none; }
-  .blocks { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; width: 76px; }
-  .blocks i { display: block; aspect-ratio: 1; background: #ffe27a; animation: blink 1s steps(1) infinite; }
+  .blocks { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; width: 70px; }
+  .blocks i { display: block; aspect-ratio: 1; background: var(--sky); animation: blink 1s steps(1) infinite; }
   .blocks i:nth-child(4n+2) { animation-delay: .25s; } .blocks i:nth-child(4n+3) { animation-delay: .5s; } .blocks i:nth-child(4n) { animation-delay: .75s; }
   @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: .15; } }
   #overlay:not(.busy) .blocks { display: none; }
 
+  .bottom { height: 96px; margin-top: 12px; overflow: hidden; }
   .controls {
-    margin-top: 18px; display: flex; align-items: center; justify-content: space-around; gap: 12px; padding: 16px 12px 12px;
-    background: linear-gradient(#241a4d, #170f35); border-radius: 22px; border: 3px solid #3a2c76;
-    box-shadow: inset 0 2px 0 rgba(255,255,255,.08), 0 10px 22px rgba(0,0,0,.35);
+    display: flex; align-items: center; gap: 18px; padding: 8px 16px; height: 100%;
+    background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.14); border-radius: 16px;
   }
-  .stickbox { text-align: center; flex: 0 1 190px; }
-  .stick { width: 100%; max-width: 170px; display: block; margin: 0 auto; }
-  .label { font-family: var(--pixel); font-size: 9px; color: #b9a8ff; line-height: 1.7; margin-top: 8px; }
-  .label b { color: #ffd98a; font-weight: 400; }
-  .btns { position: relative; width: 170px; height: 170px; flex: 0 0 170px; }
-  .btn {
-    position: absolute; width: 58px; height: 58px; border-radius: 50%; border: 3px solid rgba(0,0,0,.45); cursor: pointer;
-    font-family: var(--pixel); font-size: 13px; color: #fff; text-shadow: 0 2px 0 rgba(0,0,0,.45);
-    box-shadow: 0 6px 0 rgba(0,0,0,.45), inset 0 3px 0 rgba(255,255,255,.35); transition: transform .06s, box-shadow .06s, filter .06s;
+  .stick { width: 78px; height: 78px; flex: none; display: block; }
+  .keys { display: flex; flex-wrap: wrap; gap: 8px 16px; font-size: 13px; color: #cfcfdb; align-content: center; }
+  .key { display: inline-flex; align-items: center; gap: 7px; opacity: .85; transition: opacity .08s; }
+  .key.on { opacity: 1; color: #fff; }
+  kbd {
+    background: #26262e; border: 1px solid #55555f; border-bottom-width: 3px; border-radius: 6px; padding: 2px 7px;
+    font-family: var(--pixel); font-size: 9px; color: #eeeaff; transition: background .08s, transform .08s;
   }
-  .btn small { display: block; font-size: 6px; margin-top: 3px; letter-spacing: .05em; }
-  .btn.down { transform: translateY(5px); box-shadow: 0 1px 0 rgba(0,0,0,.45), inset 0 3px 0 rgba(255,255,255,.2); filter: brightness(1.35); }
-  .btn.x { left: 0; top: 56px; background: #3b82f6; } .btn.y { left: 56px; top: 0; background: #e8b81f; }
-  .btn.a { left: 56px; top: 112px; background: #27ae60; } .btn.b { left: 112px; top: 56px; background: #e0414f; }
+  .key.on kbd { background: var(--lilac); color: #1b1630; transform: translateY(2px); border-bottom-width: 1px; }
 
-  .info { margin-top: 18px; font-size: 15px; line-height: 1.6; }
-  #scheme { font-family: var(--pixel); font-size: clamp(8px, .85vw, 12px); color: #8fe3ff; line-height: 1.8; }
-  #status { margin-top: 10px; font-size: clamp(14px, 1.15vw, 18px); color: #f4eeff; min-height: 2.8em; }
-  footer { margin-top: 16px; font-size: 12.5px; color: #8f83bd; line-height: 1.9; }
-  kbd { background: #2b2158; border: 1px solid #4a3c8f; border-radius: 4px; padding: 1px 6px; font-family: inherit; color: #e6ddff; }
+  .info { padding: 2px 6px; }
+  #scheme { font-family: var(--pixel); font-size: clamp(8px, .8vw, 11px); color: var(--sky); line-height: 1.8; }
+  #status { margin-top: 8px; font-size: clamp(13px, 1.05vw, 17px); color: #f4f4f8; line-height: 1.45; }
 </style>
 </head>
 <body>
@@ -100,53 +97,38 @@
   <p class="tag">DRAW A ROUGH LINE. THE AI STRETCHES IT INTO 90S PIXEL ART. <span id="ver"></span></p>
 </header>
 
-<main class="grid">
-  <section>
+<main>
+  <section class="col">
     <div class="frame">
       <div class="screen pad"><canvas id="pad" width="640" height="480"></canvas><canvas id="cursor" width="640" height="480"></canvas></div>
       <div class="plate">SKETCH PAD</div>
     </div>
-    <div class="controls">
-      <div class="stickbox">
-        <svg class="stick" id="stickL" viewBox="-70 -70 140 140">
+    <div class="bottom">
+      <div class="controls">
+        <svg class="stick" id="stick" viewBox="-70 -70 140 140" aria-label="Joystick">
           <defs>
-            <radialGradient id="baseL" cx="40%" cy="35%"><stop offset="0" stop-color="#4d4d68"/><stop offset="1" stop-color="#15151f"/></radialGradient>
-            <radialGradient id="capL" cx="35%" cy="30%"><stop offset="0" stop-color="#ffb3c8"/><stop offset=".55" stop-color="#e8406b"/><stop offset="1" stop-color="#8f1d3a"/></radialGradient>
+            <radialGradient id="base" cx="40%" cy="35%"><stop offset="0" stop-color="#55556a"/><stop offset="1" stop-color="#15151d"/></radialGradient>
+            <radialGradient id="capg" cx="35%" cy="30%"><stop offset="0" stop-color="#f1ebff"/><stop offset=".55" stop-color="#a999f0"/><stop offset="1" stop-color="#5a49b4"/></radialGradient>
           </defs>
-          <circle r="66" fill="url(#baseL)" stroke="#000" stroke-opacity=".5" stroke-width="3"/>
-          <circle r="48" fill="#0a0a11" stroke="#2c2c3e" stroke-width="3"/>
-          <line class="shaft" stroke="#2a2a38" stroke-width="15" stroke-linecap="round"/>
+          <circle r="66" fill="url(#base)" stroke="#000" stroke-opacity=".5" stroke-width="3"/>
+          <circle r="48" fill="#0a0a10" stroke="#34343f" stroke-width="3"/>
+          <line class="shaft" stroke="#2a2a35" stroke-width="15" stroke-linecap="round"/>
           <circle class="shadow" r="31" fill="#000" opacity=".4"/>
-          <circle class="cap" r="29" fill="url(#capL)" stroke="#5a1228" stroke-width="2"/>
-          <circle class="dimple" r="13" fill="none" stroke="#fff" stroke-opacity=".38" stroke-width="2"/>
+          <circle class="cap" r="29" fill="url(#capg)" stroke="#3b2f80" stroke-width="2"/>
+          <circle class="dimple" r="13" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="2"/>
         </svg>
-        <div class="label">LEFT STICK<br><b>W A S D</b></div>
-      </div>
-      <div class="btns">
-        <button class="btn y" data-action="scheme" aria-label="Change color scheme">Y<small>COLOR</small></button>
-        <button class="btn x" data-action="pen" aria-label="Put the pen down">X<small>PEN</small></button>
-        <button class="btn b" data-action="clear" aria-label="Clear">B<small>CLEAR</small></button>
-        <button class="btn a" data-action="send" aria-label="Send">A<small>SEND</small></button>
-      </div>
-      <div class="stickbox">
-        <svg class="stick" id="stickR" viewBox="-70 -70 140 140">
-          <defs>
-            <radialGradient id="baseR" cx="40%" cy="35%"><stop offset="0" stop-color="#4d4d68"/><stop offset="1" stop-color="#15151f"/></radialGradient>
-            <radialGradient id="capR" cx="35%" cy="30%"><stop offset="0" stop-color="#a9e4ff"/><stop offset=".55" stop-color="#3d9be0"/><stop offset="1" stop-color="#1b4f86"/></radialGradient>
-          </defs>
-          <circle r="66" fill="url(#baseR)" stroke="#000" stroke-opacity=".5" stroke-width="3"/>
-          <circle r="48" fill="#0a0a11" stroke="#2c2c3e" stroke-width="3"/>
-          <line class="shaft" stroke="#2a2a38" stroke-width="15" stroke-linecap="round"/>
-          <circle class="shadow" r="31" fill="#000" opacity=".4"/>
-          <circle class="cap" r="29" fill="url(#capR)" stroke="#12385f" stroke-width="2"/>
-          <circle class="dimple" r="13" fill="none" stroke="#fff" stroke-opacity=".38" stroke-width="2"/>
-        </svg>
-        <div class="label">RIGHT STICK<br><b>ARROW KEYS</b></div>
+        <div class="keys">
+          <span class="key" data-keys="w a s d ArrowUp ArrowLeft ArrowDown ArrowRight"><kbd>W A S D</kbd>or<kbd>ARROWS</kbd>move</span>
+          <span class="key" data-keys=" "><kbd>SPACE</kbd>pen down</span>
+          <span class="key" data-keys="Enter"><kbd>ENTER</kbd>send</span>
+          <span class="key" data-keys="Backspace"><kbd>BACKSPACE</kbd>clear</span>
+          <span class="key" data-keys="c"><kbd>C</kbd>color scheme</span>
+        </div>
       </div>
     </div>
   </section>
 
-  <section>
+  <section class="col">
     <div class="frame">
       <div class="screen display">
         <img id="art" alt="The pixel art made from your sketch">
@@ -154,22 +136,18 @@
       </div>
       <div class="plate">PIXEL VIEWER</div>
     </div>
-    <div class="info">
-      <div id="scheme"></div>
-      <div id="status"></div>
+    <div class="bottom">
+      <div class="info">
+        <div id="scheme"></div>
+        <div id="status"></div>
+      </div>
     </div>
   </section>
 </main>
 
-<footer>
-  Move the pen with either stick (or <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> and the arrow keys; press two for a diagonal).
-  Choose where to start, then <kbd>Space</kbd> puts the pen down. After that it is one continuous line.
-  <kbd>Enter</kbd> sends it, <kbd>Backspace</kbd> clears it, <kbd>C</kbd> changes the color scheme. A game controller works too.
-</footer>
-
 <script>
 const W = 640, H = 480, SPEED = 90, MIN_STEP = 2, MAX_POINTS = 4500; // SPEED is pixels per second
-document.getElementById("ver").textContent = "version 6";
+document.getElementById("ver").textContent = "version 7";
 const pad = document.getElementById("pad"), ctx = pad.getContext("2d");
 const cur = document.getElementById("cursor").getContext("2d");
 const art = document.getElementById("art"), statusEl = document.getElementById("status");
@@ -177,28 +155,40 @@ const overlay = document.getElementById("overlay"), overlayText = document.getEl
 const token = new URLSearchParams(location.hash.slice(1)).get("token");
 const headers = token ? { "X-Token": token } : {};
 let x = W / 2, y = H / 2, points = [], penDown = false, busy = false;
-const START_HINT = "Move to where you want to start, then press Space (or X) to put the pen down.";
+const START_HINT = "Move to where you want to start, then press Space to put the pen down.";
 statusEl.textContent = START_HINT;
 const keys = new Set();
+
+// ---------- fit everything on one screen, no scrolling ----------
+function fit() {
+  const main = document.querySelector("main"), r = main.getBoundingClientRect();
+  const bottom = document.querySelector(".bottom").offsetHeight + 12;
+  const frameExtraH = 18 + 12 + 10 + (document.querySelector(".plate").offsetHeight || 14);
+  const colW = (r.width - 24) / 2 - 36;
+  const availH = innerHeight - r.top - 14 - bottom - frameExtraH;
+  const sw = innerWidth <= 900 ? Math.min(r.width - 36, 640) : Math.max(220, Math.min(colW, availH * 4 / 3));
+  document.documentElement.style.setProperty("--sw", sw + "px");
+}
+addEventListener("resize", fit);
+fit();
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(fit);
 
 // ---------- color schemes ----------
 let schemeNames = ["random"], schemeInfo = {}, schemeIdx = 0;
 const schemeEl = document.getElementById("scheme");
 function showScheme() {
   const name = schemeNames[schemeIdx];
-  schemeEl.innerHTML = "COLOR SCHEME: " + name.toUpperCase() + "<br><span style='color:#8f83bd'>" + (schemeInfo[name] || "a surprise each time") + "</span>";
+  schemeEl.innerHTML = "COLOR SCHEME: " + name.toUpperCase() + "<br><span style='color:#9a9aae'>" + (schemeInfo[name] || "a surprise each time") + "</span>";
 }
 function nextScheme() { if (!busy) { schemeIdx = (schemeIdx + 1) % schemeNames.length; showScheme(); } }
 fetch("/api/schemes", { headers }).then(r => r.json()).then(d => { schemeInfo = d.schemes; schemeNames = ["random", ...Object.keys(d.schemes)]; showScheme(); }).catch(() => showScheme());
 showScheme();
 
-// ---------- on-screen controller ----------
-const sticks = ["L", "R"].map(side => {
-  const svg = document.getElementById("stick" + side);
-  return { svg, shaft: svg.querySelector(".shaft"), shadow: svg.querySelector(".shadow"), cap: svg.querySelector(".cap"), dimple: svg.querySelector(".dimple"), px: 0, py: 0 };
-});
-function drawStick(s, tx, ty, dt) {
-  const k = Math.min(1, dt * 22);
+// ---------- the joystick on screen ----------
+const svg = document.getElementById("stick");
+const stickParts = { shaft: svg.querySelector(".shaft"), shadow: svg.querySelector(".shadow"), cap: svg.querySelector(".cap"), dimple: svg.querySelector(".dimple"), px: 0, py: 0 };
+function drawStick(tx, ty, dt) {
+  const s = stickParts, k = Math.min(1, dt * 22);
   s.px += (tx - s.px) * k; s.py += (ty - s.py) * k;
   const reach = 27, cx = s.px * reach, cy = s.py * reach, lift = 1 + 0.08 * Math.hypot(s.px, s.py);
   s.shaft.setAttribute("x1", 0); s.shaft.setAttribute("y1", 0); s.shaft.setAttribute("x2", cx); s.shaft.setAttribute("y2", cy);
@@ -206,28 +196,23 @@ function drawStick(s, tx, ty, dt) {
   s.cap.setAttribute("cx", cx); s.cap.setAttribute("cy", cy); s.cap.setAttribute("r", 29 * lift);
   s.dimple.setAttribute("cx", cx); s.dimple.setAttribute("cy", cy);
 }
-const buttonEls = Object.fromEntries([...document.querySelectorAll(".btn")].map(b => [b.dataset.action, b]));
-function flash(action, on) { if (buttonEls[action]) buttonEls[action].classList.toggle("down", on); }
-const actions = { send: () => send(), clear: () => clearPad(), pen: () => putPenDown(), scheme: () => nextScheme() };
-for (const [name, el] of Object.entries(buttonEls)) {
-  el.addEventListener("mousedown", () => { flash(name, true); actions[name](); });
-  el.addEventListener("mouseup", () => flash(name, false));
-  el.addEventListener("mouseleave", () => flash(name, false));
-  el.addEventListener("keydown", e => e.preventDefault());
-}
 
 // ---------- keyboard ----------
-const keyAction = { " ": "pen", Enter: "send", Backspace: "clear", c: "scheme" };
+const keyAction = { " ": () => putPenDown(), Enter: () => send(), Backspace: () => clearPad(), c: () => nextScheme() };
+function lightKey(k, on) {
+  document.querySelectorAll(".key").forEach(el => {
+    if (el.dataset.keys.split(" ").includes(k) || (k === " " && el.dataset.keys === " ")) el.classList.toggle("on", on);
+  });
+}
 addEventListener("keydown", e => {
   const k = e.key.length === 1 ? e.key.toLowerCase() : e.key;
-  keys.add(k);
-  if (!e.repeat && keyAction[k]) { flash(keyAction[k], true); actions[keyAction[k]](); }
+  keys.add(k); lightKey(k, true);
+  if (!e.repeat && keyAction[k]) keyAction[k]();
   if (k.startsWith("Arrow") || k === " " || k === "Backspace") e.preventDefault();
 });
 addEventListener("keyup", e => {
   const k = e.key.length === 1 ? e.key.toLowerCase() : e.key;
-  keys.delete(k);
-  if (keyAction[k]) flash(keyAction[k], false);
+  keys.delete(k); lightKey(k, false);
 });
 
 // ---------- drawing ----------
@@ -285,40 +270,37 @@ function frame(now) {
   lastTime = now;
   const pads = navigator.getGamepads ? [...navigator.getGamepads()].filter(Boolean) : [];
   const gp = pads[0];
-  if (gp) {
+  if (gp) { // A sends, B clears, X puts the pen down, Y changes the color scheme
     const now4 = [0, 1, 2, 3].map(i => !!(gp.buttons[i] && gp.buttons[i].pressed));
-    const map = ["send", "clear", "pen", "scheme"]; // A, B, X, Y
-    now4.forEach((down, i) => {
-      if (down !== wasPad[i]) { flash(map[i], down); if (down) actions[map[i]](); }
-    });
+    const map = [() => send(), () => clearPad(), () => putPenDown(), () => nextScheme()];
+    now4.forEach((down, i) => { if (down && !wasPad[i]) map[i](); });
     wasPad = now4;
   }
-  // left stick: W A S D (or the pad's left stick). right stick: the arrow keys (or the pad's right stick).
-  let l = [0, 0], r = [0, 0];
-  if (keys.has("a")) l[0] -= 1; if (keys.has("d")) l[0] += 1; if (keys.has("w")) l[1] -= 1; if (keys.has("s")) l[1] += 1;
-  if (keys.has("ArrowLeft")) r[0] -= 1; if (keys.has("ArrowRight")) r[0] += 1; if (keys.has("ArrowUp")) r[1] -= 1; if (keys.has("ArrowDown")) r[1] += 1;
+  // W A S D and the arrow keys move the one joystick; a game controller's two sticks add to it.
+  let v = [0, 0];
+  if (keys.has("a") || keys.has("ArrowLeft")) v[0] -= 1;
+  if (keys.has("d") || keys.has("ArrowRight")) v[0] += 1;
+  if (keys.has("w") || keys.has("ArrowUp")) v[1] -= 1;
+  if (keys.has("s") || keys.has("ArrowDown")) v[1] += 1;
   if (gp) {
     const [lx, ly] = stick(gp.axes[0] || 0, gp.axes[1] || 0), [rx, ry] = stick(gp.axes[2] || 0, gp.axes[3] || 0);
-    l = [l[0] + lx, l[1] + ly]; r = [r[0] + rx, r[1] + ry];
+    v = [v[0] + lx + rx, v[1] + ly + ry];
   }
-  l = unit(l); r = unit(r);
-  drawStick(sticks[0], l[0], l[1], dt); drawStick(sticks[1], r[0], r[1], dt);
+  const [dx, dy] = unit(v); // a diagonal is no faster than a straight line
+  drawStick(dx, dy, dt);
 
   aimX = 0; aimY = 0;
-  if (!busy) {
-    let [dx, dy] = unit([l[0] + r[0], l[1] + r[1]]); // either stick, or both together; a diagonal is no faster
-    if ((dx || dy) && (!penDown || points.length < MAX_POINTS)) {
-      aimX = dx; aimY = dy;
-      const nx = Math.max(0, Math.min(W - 1, x + dx * SPEED * dt)), ny = Math.max(0, Math.min(H - 1, y + dy * SPEED * dt));
-      if (penDown) {
-        ctx.strokeStyle = "#2b2b2b"; ctx.lineWidth = 3; ctx.lineCap = "round";
-        ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(nx, ny); ctx.stroke();
-      }
-      x = nx; y = ny;
-      if (penDown) {
-        const last = points[points.length - 1];
-        if (Math.hypot(x - last[0] * W, y - last[1] * H) >= MIN_STEP) points.push([+(x / W).toFixed(4), +(y / H).toFixed(4)]);
-      }
+  if (!busy && (dx || dy) && (!penDown || points.length < MAX_POINTS)) {
+    aimX = dx; aimY = dy;
+    const nx = Math.max(0, Math.min(W - 1, x + dx * SPEED * dt)), ny = Math.max(0, Math.min(H - 1, y + dy * SPEED * dt));
+    if (penDown) {
+      ctx.strokeStyle = "#2b2b2b"; ctx.lineWidth = 3; ctx.lineCap = "round";
+      ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(nx, ny); ctx.stroke();
+    }
+    x = nx; y = ny;
+    if (penDown) {
+      const last = points[points.length - 1];
+      if (Math.hypot(x - last[0] * W, y - last[1] * H) >= MIN_STEP) points.push([+(x / W).toFixed(4), +(y / H).toFixed(4)]);
     }
   }
   drawCursor();
@@ -351,7 +333,7 @@ async function send() {
         const png = await (await fetch("/api/jobs/" + body.id + "/art.png", { headers })).blob();
         art.src = URL.createObjectURL(png);
         overlay.className = "hidden";
-        statusEl.textContent = "It looks like: " + job.subject + ", in the " + job.scheme + " scheme (" + job.seconds + "s, " + job.attempts + " attempt" + (job.attempts > 1 ? "s" : "") + "). Backspace to draw again.";
+        statusEl.textContent = "It looks like: " + job.subject + ", in the " + job.scheme + " scheme (" + job.seconds + "s). Backspace to draw again.";
         break;
       }
     }
