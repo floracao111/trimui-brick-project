@@ -57,7 +57,7 @@ The app always makes 90s-style pixel art, and the buttons change how it looks:
 4. **Render.** The node checks that the picture still follows the player's lines and added nothing (retrying if not), fixes small counting slips (a row off by one pixel), retries if it is badly wrong, enforces the palette, and renders it as a crisp image with the same look every time, then sends it back to the handheld.
 5. **Own language model (later).** Once the node hosts its own small model in Week 11, it can handle side jobs such as naming each picture.
 
-The node side of this is built and tested with four sketches (banana, star, house, fish): each came back valid with its own colors and background (the star, house and fish in 72 to 106 seconds at low effort; the banana took about three minutes at default effort). The server, the handheld app and the device deploy are not built yet, and I still need to try more sketches. If my Pro plan's limits or terms get in the way, the node can use a pay-as-you-go API key instead without changing the rest of the design.
+The node side is built and tested with test sketches (banana, star, house, fish, flower, tree): each came back valid with its own colors and background, usually in one to three minutes at low effort. The server, the handheld app and the device deploy are now built too, and a hand-drawn apple has gone the whole way from the handheld to the node and back. I still need to try more sketches on the device. If my Pro plan's limits or terms get in the way, the node can use a pay-as-you-go API key instead without changing the rest of the design.
 
 The node and the handheld are both arm64, so code built on the node runs on the handheld.
 
@@ -70,17 +70,17 @@ The node and the handheld are both arm64, so code built on the node runs on the 
 ## Build and deploy
 
 1. Write and compile the app on the node (arm64).
-2. Copy it to my laptop, then onto the handheld's SD card (card-reader USB mode, or SSH once I can reach the device).
+2. Copy it to my laptop, then onto the handheld's SD card with `adb` over USB (Data mode). Wi-Fi scans and SSH never found the handheld, so USB is the way in.
 3. Launch it from the Brick Pro's stock menu. I run this step myself.
 
-Both machines are arm64, but the handheld runs an older Linux than the node, so a program built on the node may need its libraries bundled or linked statically. A tiny "hello world" test through the same pipeline comes first, to prove it works before building the real app.
+Both machines are arm64, but the handheld runs an older Linux (glibc 2.33) than the node (2.39), so a program built normally on the node will not start there. The app is linked statically to avoid that. A tiny "hello world" went through the same pipeline first and worked, then the real app.
 
 ## Steps
 
-1. Drawing canvas prototype on my laptop.
-2. Node server that asks Claude to turn a sketch into a pixel grid, and renders it.
-3. Get the app running on the Brick Pro.
-4. Connect the handheld to the node, end to end.
+1. ~~Drawing canvas prototype on my laptop.~~ Done.
+2. ~~Node server that asks Claude to turn a sketch into a pixel grid, and renders it.~~ Done.
+3. ~~Get the app running on the Brick Pro.~~ Done.
+4. ~~Connect the handheld to the node, end to end.~~ Done: draw, send, wait, see the art on the handheld.
 5. Add the button options, and the self-hosted model on the node for side jobs.
 6. Documentation, license, and a tagged release.
 

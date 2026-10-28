@@ -11,8 +11,9 @@ This repo lives on the student's laptop. You run here, on the laptop.
 - **Node.** An Oracle Ubuntu arm64 server, reached with `ssh mynode`. We build, test and run the
   pipeline there. Never ask for an address, a password or a port. If `ssh mynode` fails, stop and
   show the student the exact error.
-- **Brick Pro handheld.** Not reachable over SSH yet. Files reach it on its SD card. You never run
-  anything on it, and you never deploy to it. The student does that step.
+- **Brick Pro handheld.** Reachable over USB with `adb` when it is in Data mode (root shell, Tina Linux,
+  glibc 2.33, SDL2 in /usr/trimui/lib). Read-only commands (`adb shell ...`) are fine. Anything that writes
+  to the device or its SD card needs the student's OK first, and the student launches apps from its menu.
 
 ## How to work
 

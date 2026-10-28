@@ -1,0 +1,7 @@
+{
+"label":"Stretch a Sketch",
+"icon":"icon.png",
+"iconsel":"icon.png",
+"launch":"launch.sh",
+"description":"Draw one line with the stick. Stage 1: drawing only."
+}

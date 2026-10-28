@@ -5,6 +5,7 @@
   GET  /api/jobs/<id>            ->  {"status": "queued|working|done|error", ...}
   GET  /api/jobs/<id>/art.png    the pixel art
   GET  /api/jobs/<id>/sketch.png the sketch the model was shown
+  GET  /api/jobs/<id>/grid.txt   the pixel art as plain text for the handheld: "P <code> <rrggbb>" lines, then "R <row>" lines
   GET  /                         the laptop test page
 
 Listens on 127.0.0.1 only unless STRETCH_HOST is set, and then STRETCH_TOKEN is required.
@@ -80,11 +81,19 @@ class Jobs:
                 result = self.artist(str(job["folder"] / "sketch.png"), ink=job["ink"], scheme=job["scheme"])
                 palette = SCHEMES[result.get("scheme", job["scheme"])]["colors"]
                 (job["folder"] / "art.png").write_bytes(render_png(result["rows"], palette))
+                (job["folder"] / "grid.txt").write_text(grid_text(result["rows"], palette))
                 update = {"status": "done", "subject": result["subject"], "attempts": result["attempts"]}
             except Exception as err:  # keep the worker alive whatever the model does
                 update = {"status": "error", "error": str(err)[:300]}
             with self.lock:
                 job.update(update, seconds=round(time.time() - job["made"]))
+
+
+def grid_text(rows, palette):
+    """The art as plain text, so the handheld can read it with a few lines of C."""
+    used = sorted({code for row in rows for code in row})
+    lines = [f"P {code} {palette[code][1].lstrip('#')}" for code in used]
+    return "\n".join(lines + [f"R {row}" for row in rows]) + "\n"
 
 
 def public(job):
@@ -133,10 +142,11 @@ def make_server(host, port, artist, workdir, token=None):
                     return self.send_json(404, {"error": "no such job"})
                 if len(parts) == 4:
                     return self.send_json(200, public(job))
-                if len(parts) == 5 and parts[4] in ("art.png", "sketch.png"):
+                if len(parts) == 5 and parts[4] in ("art.png", "sketch.png", "grid.txt"):
                     file = job["folder"] / parts[4]
                     if file.exists():
-                        return self.send(200, file.read_bytes(), "image/png")
+                        kind = "text/plain" if file.suffix == ".txt" else "image/png"
+                        return self.send(200, file.read_bytes(), kind)
                     return self.send_json(404, {"error": "not ready"})
             return self.send_json(404, {"error": "not found"})
 

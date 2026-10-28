@@ -107,6 +107,19 @@ class ServerTests(unittest.TestCase):
         status, png = self.call("GET", f"/api/jobs/{job['id']}/sketch.png")
         self.assertEqual(status, 200)
 
+    def test_the_handheld_gets_the_art_as_plain_text(self):
+        self.start()
+        _, raw = self.call("POST", "/api/draw", {"points": LINE})
+        job = self.wait_for(json.loads(raw)["id"])
+        status, text = self.call("GET", f"/api/jobs/{job['id']}/grid.txt")
+        self.assertEqual(status, 200)
+        lines = text.decode().splitlines()
+        rows = [l[2:] for l in lines if l.startswith("R ")]
+        self.assertEqual(rows, BANANA["rows"])
+        palette = {l.split()[1]: l.split()[2] for l in lines if l.startswith("P ")}
+        self.assertTrue(set("".join(rows)) <= set(palette))
+        self.assertTrue(all(len(v) == 6 for v in palette.values()))
+
     def test_the_artist_is_given_the_sketch_cells_and_a_scheme(self):
         self.start()
         CALLS.clear()

@@ -2,3 +2,6 @@ __pycache__/
 out/
 *.pyc
 .DS_Store
+device/bin/
+device/*/sketch
+device/*/hello

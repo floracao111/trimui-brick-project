@@ -1,0 +1,7 @@
+{
+"label":"Stretch Hello",
+"icon":"icon.png",
+"iconsel":"icon.png",
+"launch":"launch.sh",
+"description":"Shows the pixel-art banana. Move the marker with the stick; any button quits."
+}
